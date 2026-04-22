@@ -1,0 +1,113 @@
+<?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/includes/auth.php';
+
+$user = require_login();
+
+$clientStats = [
+    'listed' => 0,
+    'pending' => 0,
+    'done' => 0,
+];
+$clientStatement = db()->prepare('SELECT STATUS, COUNT(*) AS total FROM `Gigs` WHERE BRACU_ID = :id GROUP BY STATUS');
+$clientStatement->execute(['id' => $user['BRACU_ID']]);
+foreach ($clientStatement->fetchAll() as $row) {
+    $clientStats[$row['STATUS']] = (int) $row['total'];
+}
+
+$freelancerStats = [
+    'pending' => 0,
+    'done' => 0,
+];
+$freelancerStatement = db()->prepare(
+    'SELECT g.STATUS, COUNT(*) AS total
+     FROM `Working_on` w
+     JOIN `Gigs` g ON g.GID = w.GID
+     WHERE w.BRACU_ID = :id
+     GROUP BY g.STATUS'
+);
+$freelancerStatement->execute(['id' => $user['BRACU_ID']]);
+foreach ($freelancerStatement->fetchAll() as $row) {
+    $freelancerStats[$row['STATUS']] = (int) $row['total'];
+}
+
+$availableStatement = db()->prepare(
+    'SELECT COUNT(*) FROM `Gigs` WHERE STATUS = :status'
+);
+$availableStatement->execute([
+    'status' => 'listed',
+]);
+$availableCount = (int) $availableStatement->fetchColumn();
+
+$mode = active_user_mode($user);
+
+$pageTitle = 'Dashboard';
+require_once __DIR__ . '/includes/header.php';
+?>
+<section class="card">
+    <div class="kicker">Dual-Role Workspace</div>
+    <h1>Hello, <?= h($user['BRACU_ID']) ?></h1>
+    <p class="muted">Use the same account as a client and as a freelancer. Your e-wallet updates automatically after a gig is completed.</p>
+    <p class="muted">Current login mode: <strong><?= h($mode === 'hiring' ? 'Hiring (Post jobs)' : 'Working (Apply to jobs)') ?></strong></p>
+</section>
+
+<section class="grid cols-2">
+    <article class="card">
+        <h2>Client Panel</h2>
+        <p class="muted">Post new requests, track status, and release payment when work is complete.</p>
+        <div class="stats">
+            <div class="stat">
+                <div class="label">Listed</div>
+                <div class="value"><?= $clientStats['listed'] ?></div>
+            </div>
+            <div class="stat">
+                <div class="label">Pending</div>
+                <div class="value"><?= $clientStats['pending'] ?></div>
+            </div>
+            <div class="stat">
+                <div class="label">Done</div>
+                <div class="value"><?= $clientStats['done'] ?></div>
+            </div>
+        </div>
+        <p>
+            <a class="btn btn-primary" href="client/create_gig.php">Request Your Gig</a>
+            <a class="btn btn-ghost" href="client/my_gigs.php">Listed Gigs</a>
+        </p>
+    </article>
+
+    <article class="card">
+        <h2>Freelancer Panel</h2>
+        <p class="muted">Browse available gigs, accept work, and track your active assignments.</p>
+        <div class="stats">
+            <div class="stat">
+                <div class="label">Available</div>
+                <div class="value"><?= $availableCount ?></div>
+            </div>
+            <div class="stat">
+                <div class="label">In Progress</div>
+                <div class="value"><?= $freelancerStats['pending'] ?></div>
+            </div>
+            <div class="stat">
+                <div class="label">Completed</div>
+                <div class="value"><?= $freelancerStats['done'] ?></div>
+            </div>
+        </div>
+        <p>
+            <a class="btn btn-primary" href="freelancer/marketplace.php">Available Gig List</a>
+            <a class="btn btn-ghost" href="freelancer/my_work.php">My Work</a>
+        </p>
+    </article>
+</section>
+
+<?php if (current_user_is_admin($user)): ?>
+    <section class="card" style="margin-top: 1rem;">
+        <div class="kicker">Admin Access</div>
+        <h2>Admin Management</h2>
+        <p class="muted">Manage who can access admin tools from the admin console.</p>
+        <p>
+            <a class="btn btn-primary" href="admin/manage_admins.php">Open Admin Console</a>
+        </p>
+    </section>
+<?php endif; ?>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

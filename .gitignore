@@ -1,0 +1,3 @@
+logs/mail.log
+assets/uploads/avatars/*
+!assets/uploads/avatars/.gitkeep
