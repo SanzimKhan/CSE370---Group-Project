@@ -28,6 +28,21 @@ $flash = get_flash();
             <nav class="nav-links">
                 <a href="<?= BASE_URL ?>dashboard.php">Dashboard</a>
                 <a href="<?= BASE_URL ?>profile.php">Profile</a>
+                
+                <!-- Analytics -->
+                <?php if ($activeUser['preferred_mode'] === 'working'): ?>
+                    <a href="<?= BASE_URL ?>freelancer/analytics.php">📊 Analytics</a>
+                <?php elseif ($activeUser['preferred_mode'] === 'hiring'): ?>
+                    <a href="<?= BASE_URL ?>client/analytics.php">📊 Analytics</a>
+                <?php endif; ?>
+                
+                <!-- Search -->
+                <a href="<?= BASE_URL ?>search.php">🔍 Search</a>
+                
+                <!-- Community -->
+                <a href="<?= BASE_URL ?>community/forum.php">💬 Forum</a>
+                <a href="<?= BASE_URL ?>community/messages_inbox.php">✉️ Messages</a>
+                
                 <?php if (current_user_is_admin($activeUser)): ?>
                     <a href="<?= BASE_URL ?>admin/manage_admins.php">Admin</a>
                 <?php endif; ?>

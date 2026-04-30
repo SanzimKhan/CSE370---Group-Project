@@ -81,6 +81,12 @@ SOURCE database/migration_add_admin_role.sql;
 SOURCE database/migration_add_profile_and_mode.sql;
 ```
 
+5. If you want Analytics, Indexing, and Community features, run migration:
+
+```sql
+SOURCE database/migration_add_analytics_indexing_community.sql;
+```
+
 Demo user password after seeding: `password`
 
 If you want new users, generate password hash with PHP:
@@ -101,6 +107,7 @@ Then insert into `User` table.
 	- database/sample_data.sql
 	- database/migration_add_admin_role.sql (only if DB was created before admin role)
 	- database/migration_add_profile_and_mode.sql (only if DB was created before profile/mode fields)
+	- database/migration_add_analytics_indexing_community.sql (for Analytics, Indexing, Community)
 5. Keep the project folder inside htdocs, for example:
 	- C:\xampp\htdocs\CSE370 - Group Project
 6. Open the app in browser:

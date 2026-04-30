@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EER Diagram - BRACU Freelance Marketplace</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --ink: #112a46;
+      --accent: #0b6e4f;
+      --line: #295f8a;
+      --muted: #5f6e7a;
+      --border: #b8c7d6;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #eef4fb, #f9fcff);
+      color: var(--ink);
+    }
+
+    .page {
+      width: 1200px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      letter-spacing: 0.4px;
+    }
+
+    .subtitle {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .entity {
+      fill: var(--card);
+      stroke: var(--line);
+      stroke-width: 2;
+      rx: 10;
+      ry: 10;
+    }
+
+    .header {
+      fill: #dbeaf9;
+      stroke: var(--line);
+      stroke-width: 2;
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: 700;
+      fill: var(--ink);
+    }
+
+    .attr {
+      font-size: 14px;
+      fill: var(--ink);
+    }
+
+    .pk { fill: #0b6e4f; font-weight: 700; }
+    .fk { fill: #8a4f00; font-weight: 600; }
+
+    .relation {
+      stroke: #223f5a;
+      stroke-width: 2.2;
+      fill: none;
+    }
+
+    .rel-label {
+      font-size: 13px;
+      font-weight: 600;
+      fill: #223f5a;
+      background: #fff;
+    }
+
+    .legend {
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      gap: 20px;
+    }
+
+    .chip {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .pk-chip { color: #0b6e4f; }
+    .fk-chip { color: #8a4f00; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Enhanced ER Diagram</h1>
+    <p class="subtitle">Database: bracu_freelance_marketplace</p>
+
+    <svg viewBox="0 0 1140 730" role="img" aria-label="EER diagram for User, Gigs, and Working_on tables">
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+          <polygon points="0,0 10,4 0,8" fill="#223f5a"></polygon>
+        </marker>
+      </defs>
+
+      <!-- User -->
+      <rect x="40" y="95" width="330" height="510" class="entity"></rect>
+      <rect x="40" y="95" width="330" height="56" class="header"></rect>
+      <text x="205" y="130" text-anchor="middle" class="title">User</text>
+      <text x="58" y="178" class="attr pk">PK BRACU_ID : varchar(20)</text>
+      <text x="58" y="204" class="attr">Bracu_mail : varchar(120) UNIQUE</text>
+      <text x="58" y="230" class="attr">full_name : varchar(120)</text>
+      <text x="58" y="256" class="attr">client : tinyint(1)</text>
+      <text x="58" y="282" class="attr">mobile_number : varchar(20)</text>
+      <text x="58" y="308" class="attr">address_line : varchar(255)</text>
+      <text x="58" y="334" class="attr">bio : text</text>
+      <text x="58" y="360" class="attr">avatar_path : varchar(255)</text>
+      <text x="58" y="386" class="attr">password : varchar(255)</text>
+      <text x="58" y="412" class="attr">freelancer : tinyint(1)</text>
+      <text x="58" y="438" class="attr">preferred_mode : enum(...)</text>
+      <text x="58" y="464" class="attr">is_admin : tinyint(1)</text>
+      <text x="58" y="490" class="attr">credit_balance : decimal(10,2)</text>
+      <text x="58" y="516" class="attr">created_at : timestamp</text>
+
+      <!-- Gigs -->
+      <rect x="410" y="95" width="330" height="330" class="entity"></rect>
+      <rect x="410" y="95" width="330" height="56" class="header"></rect>
+      <text x="575" y="130" text-anchor="middle" class="title">Gigs</text>
+      <text x="428" y="178" class="attr pk">PK GID : int (auto increment)</text>
+      <text x="428" y="204" class="attr fk">FK BRACU_ID : varchar(20)</text>
+      <text x="428" y="230" class="attr">CREDIT_AMOUNT : decimal(10,2)</text>
+      <text x="428" y="256" class="attr">LIST_OF_GIGS : text</text>
+      <text x="428" y="282" class="attr">CATAGORY : enum(IT, Writing, Others)</text>
+      <text x="428" y="308" class="attr">DEADLINE : date</text>
+      <text x="428" y="334" class="attr">STATUS : enum(listed, pending, done)</text>
+      <text x="428" y="360" class="attr">created_at : timestamp</text>
+
+      <!-- Working_on -->
+      <rect x="790" y="250" width="320" height="290" class="entity"></rect>
+      <rect x="790" y="250" width="320" height="56" class="header"></rect>
+      <text x="950" y="285" text-anchor="middle" class="title">Working_on</text>
+      <text x="808" y="334" class="attr pk">PK id : int (auto increment)</text>
+      <text x="808" y="360" class="attr fk">FK BRACU_ID : varchar(20)</text>
+      <text x="808" y="386" class="attr fk">FK GID : int (unique)</text>
+      <text x="808" y="412" class="attr">credit : decimal(10,2)</text>
+      <text x="808" y="438" class="attr">accepted_at : timestamp</text>
+      <text x="808" y="464" class="attr">done_at : timestamp</text>
+      <text x="808" y="490" class="attr">payment_released : tinyint(1)</text>
+
+      <!-- Relationships -->
+      <path d="M 370 210 L 410 210" class="relation" marker-end="url(#arrow)"></path>
+      <text x="390" y="196" text-anchor="middle" class="rel-label">1 to many</text>
+      <text x="350" y="228" text-anchor="end" class="rel-label">User</text>
+      <text x="430" y="228" text-anchor="start" class="rel-label">Gigs</text>
+
+      <path d="M 740 300 L 790 360" class="relation" marker-end="url(#arrow)"></path>
+      <text x="760" y="319" class="rel-label">1 to 0..1</text>
+
+      <path d="M 370 430 L 790 430" class="relation" marker-end="url(#arrow)"></path>
+      <text x="580" y="415" text-anchor="middle" class="rel-label">1 to many</text>
+
+      <!-- Notes -->
+      <rect x="420" y="460" width="320" height="145" fill="#ffffff" stroke="#9fb3c8" stroke-width="1.5" rx="8" ry="8"></rect>
+      <text x="436" y="488" class="attr" style="font-weight:700;">Constraint Notes</text>
+      <text x="436" y="514" class="attr">- working_on.GID is UNIQUE</text>
+      <text x="436" y="538" class="attr">  so each gig has at most one active worker.</text>
+      <text x="436" y="562" class="attr">- ON DELETE CASCADE used for all foreign keys.</text>
+      <text x="436" y="586" class="attr">- User acts as both Client and Freelancer.</text>
+    </svg>
+
+    <div class="legend">
+      <span class="chip pk-chip">PK: Primary Key</span>
+      <span class="chip fk-chip">FK: Foreign Key</span>
+      <span class="chip">Generated: 2026-04-23</span>
+    </div>
+  </div>
+</body>
+</html>

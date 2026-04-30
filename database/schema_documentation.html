@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Schema Documentation - BRACU Freelance Marketplace</title>
+  <style>
+    :root {
+      --ink: #1f2d3d;
+      --muted: #5f6b77;
+      --bg: #f6f9fc;
+      --card: #ffffff;
+      --line: #cfdae5;
+      --head: #e7f0f8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.45;
+    }
+
+    .page {
+      width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    h2 {
+      margin: 26px 0 10px;
+      font-size: 22px;
+      border-bottom: 2px solid var(--line);
+      padding-bottom: 6px;
+    }
+
+    p { margin: 8px 0; color: var(--muted); }
+
+    .meta {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .meta .item {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 9px;
+      font-size: 13px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--head);
+      font-weight: 700;
+    }
+
+    .section-note {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 13px;
+      color: var(--ink);
+      margin-top: 8px;
+    }
+
+    pre {
+      margin: 0;
+      background: #0f1720;
+      color: #d8e6f3;
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 12px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Database Schema Documentation</h1>
+    <p>Project: BRACU Student Freelance Marketplace</p>
+
+    <div class="meta">
+      <div class="item"><strong>Database:</strong> bracu_freelance_marketplace</div>
+      <div class="item"><strong>Engine:</strong> MySQL (InnoDB expected)</div>
+      <div class="item"><strong>Generated:</strong> 2026-04-23</div>
+    </div>
+
+    <h2>Table: User</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Column</th>
+          <th>Type</th>
+          <th>Key</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>BRACU_ID</td><td>VARCHAR(20)</td><td>PK</td><td>NO</td><td>-</td><td>Primary identifier</td></tr>
+        <tr><td>Bracu_mail</td><td>VARCHAR(120)</td><td>UNIQUE</td><td>NO</td><td>-</td><td>Institution email</td></tr>
+        <tr><td>full_name</td><td>VARCHAR(120)</td><td>-</td><td>YES</td><td>NULL</td><td>User full name</td></tr>
+        <tr><td>client</td><td>TINYINT(1)</td><td>-</td><td>NO</td><td>1</td><td>Client role flag</td></tr>
+        <tr><td>mobile_number</td><td>VARCHAR(20)</td><td>-</td><td>NO</td><td>-</td><td>Contact number</td></tr>
+        <tr><td>address_line</td><td>VARCHAR(255)</td><td>-</td><td>YES</td><td>NULL</td><td>Address</td></tr>
+        <tr><td>bio</td><td>TEXT</td><td>-</td><td>YES</td><td>NULL</td><td>Profile bio</td></tr>
+        <tr><td>avatar_path</td><td>VARCHAR(255)</td><td>-</td><td>YES</td><td>NULL</td><td>Avatar file path</td></tr>
+        <tr><td>password</td><td>VARCHAR(255)</td><td>-</td><td>NO</td><td>-</td><td>Password hash</td></tr>
+        <tr><td>freelancer</td><td>TINYINT(1)</td><td>-</td><td>NO</td><td>1</td><td>Freelancer role flag</td></tr>
+        <tr><td>preferred_mode</td><td>ENUM('hiring','working')</td><td>-</td><td>NO</td><td>'hiring'</td><td>Preferred app mode</td></tr>
+        <tr><td>is_admin</td><td>TINYINT(1)</td><td>INDEX</td><td>NO</td><td>0</td><td>Admin privilege flag</td></tr>
+        <tr><td>credit_balance</td><td>DECIMAL(10,2)</td><td>-</td><td>NO</td><td>0.00</td><td>Wallet balance</td></tr>
+        <tr><td>created_at</td><td>TIMESTAMP</td><td>-</td><td>NO</td><td>CURRENT_TIMESTAMP</td><td>Account creation time</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Table: Gigs</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Column</th>
+          <th>Type</th>
+          <th>Key</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>GID</td><td>INT</td><td>PK</td><td>NO</td><td>auto increment</td><td>Gig identifier</td></tr>
+        <tr><td>BRACU_ID</td><td>VARCHAR(20)</td><td>FK</td><td>NO</td><td>-</td><td>References User.BRACU_ID</td></tr>
+        <tr><td>CREDIT_AMOUNT</td><td>DECIMAL(10,2)</td><td>-</td><td>NO</td><td>-</td><td>Gig payment amount</td></tr>
+        <tr><td>LIST_OF_GIGS</td><td>TEXT</td><td>-</td><td>NO</td><td>-</td><td>Description/tasks</td></tr>
+        <tr><td>CATAGORY</td><td>ENUM('IT','Writing','Others')</td><td>INDEX</td><td>NO</td><td>-</td><td>Gig category</td></tr>
+        <tr><td>DEADLINE</td><td>DATE</td><td>-</td><td>NO</td><td>-</td><td>Due date</td></tr>
+        <tr><td>STATUS</td><td>ENUM('listed','pending','done')</td><td>INDEX</td><td>NO</td><td>'listed'</td><td>Gig lifecycle status</td></tr>
+        <tr><td>created_at</td><td>TIMESTAMP</td><td>-</td><td>NO</td><td>CURRENT_TIMESTAMP</td><td>Creation time</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Table: Working_on</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Column</th>
+          <th>Type</th>
+          <th>Key</th>
+          <th>Null</th>
+          <th>Default</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>id</td><td>INT</td><td>PK</td><td>NO</td><td>auto increment</td><td>Row identifier</td></tr>
+        <tr><td>BRACU_ID</td><td>VARCHAR(20)</td><td>FK, INDEX</td><td>NO</td><td>-</td><td>References User.BRACU_ID</td></tr>
+        <tr><td>GID</td><td>INT</td><td>FK, UNIQUE</td><td>NO</td><td>-</td><td>References Gigs.GID (one worker per gig)</td></tr>
+        <tr><td>credit</td><td>DECIMAL(10,2)</td><td>-</td><td>NO</td><td>-</td><td>Assigned credit value</td></tr>
+        <tr><td>accepted_at</td><td>TIMESTAMP</td><td>-</td><td>NO</td><td>CURRENT_TIMESTAMP</td><td>Acceptance time</td></tr>
+        <tr><td>done_at</td><td>TIMESTAMP</td><td>-</td><td>YES</td><td>NULL</td><td>Completion time</td></tr>
+        <tr><td>payment_released</td><td>TINYINT(1)</td><td>-</td><td>NO</td><td>0</td><td>Payment status flag</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Foreign Key Constraints</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Constraint</th>
+          <th>From</th>
+          <th>To</th>
+          <th>On Update</th>
+          <th>On Delete</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>fk_gigs_user</td><td>Gigs.BRACU_ID</td><td>User.BRACU_ID</td><td>CASCADE</td><td>CASCADE</td></tr>
+        <tr><td>fk_working_on_user</td><td>Working_on.BRACU_ID</td><td>User.BRACU_ID</td><td>CASCADE</td><td>CASCADE</td></tr>
+        <tr><td>fk_working_on_gig</td><td>Working_on.GID</td><td>Gigs.GID</td><td>CASCADE</td><td>CASCADE</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Indexes</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Index Name</th>
+          <th>Table</th>
+          <th>Column(s)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>idx_gigs_status</td><td>Gigs</td><td>STATUS</td></tr>
+        <tr><td>idx_gigs_category</td><td>Gigs</td><td>CATAGORY</td></tr>
+        <tr><td>idx_working_on_user</td><td>Working_on</td><td>BRACU_ID</td></tr>
+        <tr><td>idx_user_is_admin</td><td>User</td><td>is_admin</td></tr>
+      </tbody>
+    </table>
+
+    <h2>DDL Snapshot</h2>
+    <div class="section-note">
+      <pre>CREATE DATABASE IF NOT EXISTS bracu_freelance_marketplace;
+USE bracu_freelance_marketplace;
+
+CREATE TABLE IF NOT EXISTS `User` (...);
+CREATE TABLE IF NOT EXISTS `Gigs` (...);
+CREATE TABLE IF NOT EXISTS `Working_on` (...);
+
+CREATE INDEX idx_gigs_status ON `Gigs` (STATUS);
+CREATE INDEX idx_gigs_category ON `Gigs` (CATAGORY);
+CREATE INDEX idx_working_on_user ON `Working_on` (BRACU_ID);
+CREATE INDEX idx_user_is_admin ON `User` (is_admin);</pre>
+    </div>
+  </div>
+</body>
+</html>

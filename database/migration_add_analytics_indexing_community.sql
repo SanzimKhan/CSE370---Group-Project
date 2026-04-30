@@ -1,62 +1,8 @@
-CREATE DATABASE IF NOT EXISTS bracu_freelance_marketplace;
-USE bracu_freelance_marketplace;
+-- Analytics, Indexing, and Community Features Migration
 
-CREATE TABLE IF NOT EXISTS `User` (
-    BRACU_ID VARCHAR(20) PRIMARY KEY,
-    Bracu_mail VARCHAR(120) NOT NULL UNIQUE,
-    full_name VARCHAR(120) NULL,
-    client TINYINT(1) NOT NULL DEFAULT 1,
-    mobile_number VARCHAR(20) NOT NULL,
-    address_line VARCHAR(255) NULL,
-    bio TEXT NULL,
-    avatar_path VARCHAR(255) NULL,
-    password VARCHAR(255) NOT NULL,
-    freelancer TINYINT(1) NOT NULL DEFAULT 1,
-    preferred_mode ENUM('hiring', 'working') NOT NULL DEFAULT 'hiring',
-    is_admin TINYINT(1) NOT NULL DEFAULT 0,
-    credit_balance DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+-- ===== ANALYTICS TABLES =====
 
-CREATE TABLE IF NOT EXISTS `Gigs` (
-    GID INT AUTO_INCREMENT PRIMARY KEY,
-    BRACU_ID VARCHAR(20) NOT NULL,
-    CREDIT_AMOUNT DECIMAL(10,2) NOT NULL,
-    LIST_OF_GIGS TEXT NOT NULL,
-    CATAGORY ENUM('IT', 'Writing', 'Others') NOT NULL,
-    DEADLINE DATE NOT NULL,
-    STATUS ENUM('listed', 'pending', 'done') NOT NULL DEFAULT 'listed',
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_gigs_user FOREIGN KEY (BRACU_ID)
-        REFERENCES `User` (BRACU_ID)
-        ON UPDATE CASCADE
-        ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS `Working_on` (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    BRACU_ID VARCHAR(20) NOT NULL,
-    GID INT NOT NULL,
-    credit DECIMAL(10,2) NOT NULL,
-    accepted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    done_at TIMESTAMP NULL,
-    payment_released TINYINT(1) NOT NULL DEFAULT 0,
-    CONSTRAINT uq_working_on_gid UNIQUE (GID),
-    CONSTRAINT fk_working_on_user FOREIGN KEY (BRACU_ID)
-        REFERENCES `User` (BRACU_ID)
-        ON UPDATE CASCADE
-        ON DELETE CASCADE,
-    CONSTRAINT fk_working_on_gig FOREIGN KEY (GID)
-        REFERENCES `Gigs` (GID)
-        ON UPDATE CASCADE
-        ON DELETE CASCADE
-);
-
-CREATE INDEX idx_gigs_status ON `Gigs` (STATUS);
-CREATE INDEX idx_gigs_category ON `Gigs` (CATAGORY);
-CREATE INDEX idx_working_on_user ON `Working_on` (BRACU_ID);
-CREATE INDEX idx_user_is_admin ON `User` (is_admin);
-
+-- Track user activities for analytics
 CREATE TABLE IF NOT EXISTS `Analytics_Activity` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     BRACU_ID VARCHAR(20) NOT NULL,
@@ -77,6 +23,7 @@ CREATE TABLE IF NOT EXISTS `Analytics_Activity` (
         ON DELETE CASCADE
 );
 
+-- Track gig views
 CREATE TABLE IF NOT EXISTS `Gig_Views` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     GID INT NOT NULL,
@@ -93,6 +40,7 @@ CREATE TABLE IF NOT EXISTS `Gig_Views` (
         ON DELETE SET NULL
 );
 
+-- Track user earnings
 CREATE TABLE IF NOT EXISTS `User_Earnings` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     BRACU_ID VARCHAR(20) NOT NULL,
@@ -111,6 +59,9 @@ CREATE TABLE IF NOT EXISTS `User_Earnings` (
         ON DELETE CASCADE
 );
 
+-- ===== COMMUNITY TABLES =====
+
+-- Ratings and Reviews
 CREATE TABLE IF NOT EXISTS `Ratings` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     rater_id VARCHAR(20) NOT NULL,
@@ -136,6 +87,7 @@ CREATE TABLE IF NOT EXISTS `Ratings` (
     UNIQUE KEY unique_gig_rating (rater_id, ratee_id, gig_id)
 );
 
+-- User Reputation/Badges
 CREATE TABLE IF NOT EXISTS `User_Badges` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     BRACU_ID VARCHAR(20) NOT NULL,
@@ -150,6 +102,7 @@ CREATE TABLE IF NOT EXISTS `User_Badges` (
     UNIQUE KEY unique_user_badge (BRACU_ID, badge_type)
 );
 
+-- Direct Messaging
 CREATE TABLE IF NOT EXISTS `Messages` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     sender_id VARCHAR(20) NOT NULL,
@@ -173,6 +126,7 @@ CREATE TABLE IF NOT EXISTS `Messages` (
         ON DELETE SET NULL
 );
 
+-- Community Forums/Discussions
 CREATE TABLE IF NOT EXISTS `Forum_Threads` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     creator_id VARCHAR(20) NOT NULL,
@@ -209,6 +163,9 @@ CREATE TABLE IF NOT EXISTS `Forum_Replies` (
         ON DELETE CASCADE
 );
 
+-- ===== INDEXING TABLES =====
+
+-- Full-text search index for gigs
 CREATE TABLE IF NOT EXISTS `Gig_Search_Index` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     GID INT NOT NULL UNIQUE,
@@ -222,6 +179,9 @@ CREATE TABLE IF NOT EXISTS `Gig_Search_Index` (
         ON DELETE CASCADE
 );
 
+-- ===== INDEXES FOR PERFORMANCE =====
+
+-- Analytics indexes
 CREATE INDEX idx_analytics_user ON `Analytics_Activity` (BRACU_ID);
 CREATE INDEX idx_analytics_type ON `Analytics_Activity` (activity_type);
 CREATE INDEX idx_analytics_created ON `Analytics_Activity` (created_at);
@@ -229,6 +189,8 @@ CREATE INDEX idx_gig_views_gid ON `Gig_Views` (GID);
 CREATE INDEX idx_gig_views_user ON `Gig_Views` (BRACU_ID);
 CREATE INDEX idx_earnings_user ON `User_Earnings` (BRACU_ID);
 CREATE INDEX idx_earnings_status ON `User_Earnings` (status);
+
+-- Community indexes
 CREATE INDEX idx_ratings_rater ON `Ratings` (rater_id);
 CREATE INDEX idx_ratings_ratee ON `Ratings` (ratee_id);
 CREATE INDEX idx_ratings_gig ON `Ratings` (gig_id);
