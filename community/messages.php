@@ -1,16 +1,19 @@
 <?php
 declare(strict_types=1);
+session_start();
 
 require_once __DIR__ . '/../includes/config.php';
-require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/community.php';
 
 // Check authentication
-require_login();
+if (!isset($_SESSION['user_bracu_id'])) {
+    header('Location: ../index.php');
+    exit;
+}
 
-$conn = getConnection();
-$community = new Community($conn);
+$pdo = db();
+$community = new Community($pdo);
 
 // Get conversation user ID
 $contact_id = $_GET['user'] ?? null;
@@ -22,10 +25,9 @@ if (!$contact_id) {
 
 // Verify contact exists
 $query = "SELECT full_name, avatar_path FROM User WHERE BRACU_ID = ?";
-$stmt = $conn->prepare($query);
-$stmt->bind_param('s', $contact_id);
-$stmt->execute();
-$contact = $stmt->get_result()->fetch_assoc();
+$stmt = $pdo->prepare($query);
+$stmt->execute([$contact_id]);
+$contact = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$contact) {
     header('Location: messages_inbox.php');
@@ -38,28 +40,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_message'])) {
     $gig_id = (int) ($_POST['gig_id'] ?? 0);
 
     if ($message_text) {
-        $community->sendMessage($_SESSION['user_id'], $contact_id, $message_text, $gig_id ?: null);
-        
+        $community->sendMessage($_SESSION['user_bracu_id'], $contact_id, $message_text, $gig_id ?: null);
+
         // Mark messages as read
-        $community->markMessagesAsRead($contact_id, $_SESSION['user_id']);
-        
+        $community->markMessagesAsRead($contact_id, $_SESSION['user_bracu_id']);
+
         header('Location: messages.php?user=' . urlencode($contact_id));
         exit;
     }
 }
 
 // Get conversation messages
-$messages = $community->getConversation($_SESSION['user_id'], $contact_id);
+$messages = $community->getConversation($_SESSION['user_bracu_id'], $contact_id);
 
 // Mark messages as read
-$community->markMessagesAsRead($contact_id, $_SESSION['user_id']);
+$community->markMessagesAsRead($contact_id, $_SESSION['user_bracu_id']);
 
 // Get user's gigs for context
 $query = "SELECT GID, LIST_OF_GIGS FROM Gigs WHERE BRACU_ID = ? LIMIT 10";
-$stmt = $conn->prepare($query);
-$stmt->bind_param('s', $_SESSION['user_id']);
-$stmt->execute();
-$user_gigs = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt = $pdo->prepare($query);
+$stmt->execute([$_SESSION['user_bracu_id']]);
+$user_gigs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -251,8 +252,8 @@ $user_gigs = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         <div class="chat-messages">
             <?php if (count($messages) > 0): ?>
                 <?php foreach (array_reverse($messages) as $msg): ?>
-                    <div class="message <?php echo $msg['sender_id'] === $_SESSION['user_id'] ? 'sent' : 'received'; ?>">
-                        <?php if ($msg['sender_id'] !== $_SESSION['user_id']): ?>
+                    <div class="message <?php echo $msg['sender_id'] === $_SESSION['user_bracu_id'] ? 'sent' : 'received'; ?>">
+                        <?php if ($msg['sender_id'] !== $_SESSION['user_bracu_id']): ?>
                             <img src="<?php echo htmlspecialchars($contact['avatar_path'] ?? '/assets/uploads/avatars/default.png'); ?>" 
                                  class="message-avatar">
                         <?php endif; ?>

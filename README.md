@@ -8,6 +8,7 @@ The app includes e-wallet transfer logic where credit moves from client to freel
 
 ## Features Implemented
 
+### Core Marketplace Features
 1. Secure login with BRACU ID and password hash verification
 2. Dual-role dashboard with quick access to client and freelancer tools
 3. Profile page with wallet credit view
@@ -25,6 +26,19 @@ The app includes e-wallet transfer logic where credit moves from client to freel
 15. Login mode selector (Hiring or Working)
 16. Marketplace now shows all listed gigs (including your posted gigs as non-accept actions)
 
+### Analytics, Indexing & Community Features
+17. Advanced user analytics dashboard with earnings tracking
+18. Full-text search for gigs with advanced filtering
+19. Community forums with threaded discussions
+20. Direct messaging system between users
+21. User ratings and review system with badge awards
+
+### Virtual Economy & Transaction Processing (NEW)
+22. **Rewards/Points System** - Earn points through activities, redeem for credits
+23. **Transaction Ledger** - Complete audit trail of all transactions
+24. **Batch Transaction Processing** - Efficient settlement of multiple transactions
+25. **Dispute Resolution System** - File disputes, admin review, and refund handling
+
 ## Project Structure
 
 - `index.php`: Login
@@ -32,14 +46,22 @@ The app includes e-wallet transfer logic where credit moves from client to freel
 - `profile.php`: User profile and wallet
 - `assets/uploads/avatars/`: Uploaded profile pictures
 - `admin/manage_admins.php`: Admin management (grant/revoke admin role)
+- `admin/disputes_admin.php`: Dispute management panel
 - `client/create_gig.php`: Client gig request form
 - `client/my_gigs.php`: Client status board and done trigger
+- `client/transaction_ledger.php`: View all transactions with audit trail
+- `client/disputes.php`: File disputes and view complaint history
 - `freelancer/marketplace.php`: Available gig list and accept flow
 - `freelancer/my_work.php`: Accepted gigs tracker
+- `freelancer/rewards_system.php`: View and redeem points
 - `includes/`: Config, DB, auth, helper, wallet and mail logic
+- `includes/virtual_economy.php`: Virtual economy system class (points, transactions, disputes)
 - `database/schema.sql`: Tables and constraints
 - `database/sample_data.sql`: Optional demo users
+- `database/migration_add_virtual_economy.sql`: Virtual economy tables and indexes
 - `logs/mail.log`: Email logs for local/dev fallback
+- `VIRTUAL_ECONOMY.md`: Complete API documentation
+- `VIRTUAL_ECONOMY_SETUP.md`: Implementation and testing guide
 
 ## Database Setup
 
@@ -85,6 +107,12 @@ SOURCE database/migration_add_profile_and_mode.sql;
 
 ```sql
 SOURCE database/migration_add_analytics_indexing_community.sql;
+```
+
+6. If you want Virtual Economy and Transaction Processing features, run migration:
+
+```sql
+SOURCE database/migration_add_virtual_economy.sql;
 ```
 
 Demo user password after seeding: `password`

@@ -1,15 +1,13 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/db.php';
-
 class Community
 {
-    private $conn;
+    private $pdo;
 
-    public function __construct(mysqli $conn)
+    public function __construct(PDO $pdo)
     {
-        $this->conn = $conn;
+        $this->pdo = $pdo;
     }
 
     /**
@@ -23,18 +21,21 @@ class Community
         ?int $gig_id = null,
         bool $is_client_rating = false
     ): bool {
-        if ($rating < 1 || $rating > 5) {
+        try {
+            if ($rating < 1 || $rating > 5) {
+                return false;
+            }
+
+            $query = "INSERT INTO Ratings (rater_id, ratee_id, gig_id, rating, review_text, is_client_rating)
+                      VALUES (?, ?, ?, ?, ?, ?)
+                      ON DUPLICATE KEY UPDATE rating = ?, review_text = ?, updated_at = NOW()";
+
+            $stmt = $this->pdo->prepare($query);
+            return $stmt->execute([$rater_id, $ratee_id, $gig_id, $rating, $review_text, $is_client_rating, $rating, $review_text]);
+        } catch (PDOException $e) {
+            error_log("Create rating error: " . $e->getMessage());
             return false;
         }
-
-        $query = "INSERT INTO Ratings (rater_id, ratee_id, gig_id, rating, review_text, is_client_rating)
-                  VALUES (?, ?, ?, ?, ?, ?) 
-                  ON DUPLICATE KEY UPDATE rating = ?, review_text = ?, updated_at = NOW()";
-
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('ssisisiss', $rater_id, $ratee_id, $gig_id, $rating, $review_text, $is_client_rating, $rating, $review_text);
-
-        return $stmt->execute();
     }
 
     /**
@@ -42,36 +43,44 @@ class Community
      */
     public function getUserRatings(string $bracu_id): array
     {
-        $query = "SELECT r.*, u.full_name, u.avatar_path FROM Ratings r
-                  JOIN User u ON r.rater_id = u.BRACU_ID
-                  WHERE r.ratee_id = ?
-                  ORDER BY r.created_at DESC";
+        try {
+            $query = "SELECT r.*, u.full_name, u.avatar_path FROM Ratings r
+                      JOIN User u ON r.rater_id = u.BRACU_ID
+                      WHERE r.ratee_id = ?
+                      ORDER BY r.created_at DESC";
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('s', $bracu_id);
-        $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$bracu_id]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Get user ratings error: " . $e->getMessage());
+            return [];
+        }
     }
 
     /**
      * Get user rating average
      */
-    public function getUserRatingAverage(string $bracu_id): array
+    public function getUserRatingAverage(string $bracu_id): ?array
     {
-        $query = "SELECT 
-                    COUNT(*) as total_ratings,
-                    AVG(rating) as avg_rating,
-                    SUM(CASE WHEN rating = 5 THEN 1 ELSE 0 END) as five_star,
-                    SUM(CASE WHEN rating = 4 THEN 1 ELSE 0 END) as four_star,
-                    SUM(CASE WHEN rating = 3 THEN 1 ELSE 0 END) as three_star,
-                    SUM(CASE WHEN rating = 2 THEN 1 ELSE 0 END) as two_star,
-                    SUM(CASE WHEN rating = 1 THEN 1 ELSE 0 END) as one_star
-                  FROM Ratings WHERE ratee_id = ?";
+        try {
+            $query = "SELECT
+                        COUNT(*) as total_ratings,
+                        AVG(rating) as avg_rating,
+                        SUM(CASE WHEN rating = 5 THEN 1 ELSE 0 END) as five_star,
+                        SUM(CASE WHEN rating = 4 THEN 1 ELSE 0 END) as four_star,
+                        SUM(CASE WHEN rating = 3 THEN 1 ELSE 0 END) as three_star,
+                        SUM(CASE WHEN rating = 2 THEN 1 ELSE 0 END) as two_star,
+                        SUM(CASE WHEN rating = 1 THEN 1 ELSE 0 END) as one_star
+                      FROM Ratings WHERE ratee_id = ?";
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('s', $bracu_id);
-        $stmt->execute();
-        return $stmt->get_result()->fetch_assoc();
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$bracu_id]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Get rating average error: " . $e->getMessage());
+            return null;
+        }
     }
 
     /**
@@ -83,13 +92,16 @@ class Community
         string $message_text,
         ?int $gig_id = null
     ): bool {
-        $query = "INSERT INTO Messages (sender_id, recipient_id, gig_id, message_text)
-                  VALUES (?, ?, ?, ?)";
+        try {
+            $query = "INSERT INTO Messages (sender_id, recipient_id, gig_id, message_text)
+                      VALUES (?, ?, ?, ?)";
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('ssss', $sender_id, $recipient_id, $gig_id, $message_text);
-
-        return $stmt->execute();
+            $stmt = $this->pdo->prepare($query);
+            return $stmt->execute([$sender_id, $recipient_id, $gig_id, $message_text]);
+        } catch (PDOException $e) {
+            error_log("Send message error: " . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -97,16 +109,20 @@ class Community
      */
     public function getConversation(string $user1_id, string $user2_id, int $limit = 50, int $offset = 0): array
     {
-        $query = "SELECT * FROM Messages 
-                  WHERE (sender_id = ? AND recipient_id = ?) 
-                     OR (sender_id = ? AND recipient_id = ?)
-                  ORDER BY created_at DESC
-                  LIMIT ? OFFSET ?";
+        try {
+            $query = "SELECT * FROM Messages
+                      WHERE (sender_id = ? AND recipient_id = ?)
+                         OR (sender_id = ? AND recipient_id = ?)
+                      ORDER BY created_at DESC
+                      LIMIT ? OFFSET ?";
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('ssssii', $user1_id, $user2_id, $user2_id, $user1_id, $limit, $offset);
-        $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$user1_id, $user2_id, $user2_id, $user1_id, $limit, $offset]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Get conversation error: " . $e->getMessage());
+            return [];
+        }
     }
 
     /**
@@ -114,27 +130,31 @@ class Community
      */
     public function getUserConversations(string $bracu_id): array
     {
-        $query = "SELECT 
-                    m.id,
-                    CASE WHEN m.sender_id = ? THEN m.recipient_id ELSE m.sender_id END as contact_id,
-                    u.full_name,
-                    u.avatar_path,
-                    m.message_text as last_message,
-                    m.created_at as last_message_time,
-                    m.is_read,
-                    COUNT(CASE WHEN m.recipient_id = ? AND m.is_read = 0 THEN 1 END) as unread_count
-                  FROM Messages m
-                  JOIN User u ON (
-                    CASE WHEN m.sender_id = ? THEN m.recipient_id ELSE m.sender_id END
-                  ) = u.BRACU_ID
-                  WHERE m.sender_id = ? OR m.recipient_id = ?
-                  GROUP BY contact_id
-                  ORDER BY m.created_at DESC";
+        try {
+            $query = "SELECT
+                        m.id,
+                        CASE WHEN m.sender_id = ? THEN m.recipient_id ELSE m.sender_id END as contact_id,
+                        u.full_name,
+                        u.avatar_path,
+                        m.message_text as last_message,
+                        m.created_at as last_message_time,
+                        m.is_read,
+                        COUNT(CASE WHEN m.recipient_id = ? AND m.is_read = 0 THEN 1 END) as unread_count
+                      FROM Messages m
+                      JOIN User u ON (
+                        CASE WHEN m.sender_id = ? THEN m.recipient_id ELSE m.sender_id END
+                      ) = u.BRACU_ID
+                      WHERE m.sender_id = ? OR m.recipient_id = ?
+                      GROUP BY contact_id
+                      ORDER BY m.created_at DESC";
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('sssss', $bracu_id, $bracu_id, $bracu_id, $bracu_id, $bracu_id);
-        $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$bracu_id, $bracu_id, $bracu_id, $bracu_id, $bracu_id]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Get conversations error: " . $e->getMessage());
+            return [];
+        }
     }
 
     /**
@@ -142,14 +162,17 @@ class Community
      */
     public function markMessagesAsRead(string $recipient_id, string $sender_id): bool
     {
-        $query = "UPDATE Messages 
-                  SET is_read = 1, read_at = NOW()
-                  WHERE sender_id = ? AND recipient_id = ? AND is_read = 0";
+        try {
+            $query = "UPDATE Messages
+                      SET is_read = 1, read_at = NOW()
+                      WHERE sender_id = ? AND recipient_id = ? AND is_read = 0";
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('ss', $sender_id, $recipient_id);
-
-        return $stmt->execute();
+            $stmt = $this->pdo->prepare($query);
+            return $stmt->execute([$sender_id, $recipient_id]);
+        } catch (PDOException $e) {
+            error_log("Mark as read error: " . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -157,14 +180,17 @@ class Community
      */
     public function getUnreadMessageCount(string $bracu_id): int
     {
-        $query = "SELECT COUNT(*) as count FROM Messages 
-                  WHERE recipient_id = ? AND is_read = 0";
+        try {
+            $query = "SELECT COUNT(*) as count FROM Messages
+                      WHERE recipient_id = ? AND is_read = 0";
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('s', $bracu_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        return (int) $result->fetch_assoc()['count'];
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$bracu_id]);
+            return (int) ($stmt->fetch(PDO::FETCH_ASSOC)['count'] ?? 0);
+        } catch (PDOException $e) {
+            error_log("Get unread count error: " . $e->getMessage());
+            return 0;
+        }
     }
 
     /**
@@ -176,16 +202,19 @@ class Community
         string $description,
         string $category = 'General'
     ): int {
-        $query = "INSERT INTO Forum_Threads (creator_id, title, description, category)
-                  VALUES (?, ?, ?, ?)";
+        try {
+            $query = "INSERT INTO Forum_Threads (creator_id, title, description, category)
+                      VALUES (?, ?, ?, ?)";
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('ssss', $creator_id, $title, $description, $category);
-
-        if ($stmt->execute()) {
-            return (int) $this->conn->insert_id;
+            $stmt = $this->pdo->prepare($query);
+            if ($stmt->execute([$creator_id, $title, $description, $category])) {
+                return (int) $this->pdo->lastInsertId();
+            }
+            return 0;
+        } catch (PDOException $e) {
+            error_log("Create forum thread error: " . $e->getMessage());
+            return 0;
         }
-        return 0;
     }
 
     /**
@@ -193,26 +222,30 @@ class Community
      */
     public function getForumThreads(string $category = '', int $limit = 20, int $offset = 0): array
     {
-        $query = "SELECT ft.*, u.full_name, u.avatar_path FROM Forum_Threads ft
-                  JOIN User u ON ft.creator_id = u.BRACU_ID";
+        try {
+            $query = "SELECT ft.*, u.full_name, u.avatar_path FROM Forum_Threads ft
+                      JOIN User u ON ft.creator_id = u.BRACU_ID";
 
-        if ($category !== '') {
-            $query .= " WHERE ft.category = ?";
+            $params = [];
+
+            if ($category !== '') {
+                $query .= " WHERE ft.category = ?";
+                $params[] = $category;
+            }
+
+            $query .= " ORDER BY ft.is_pinned DESC, ft.updated_at DESC
+                       LIMIT ? OFFSET ?";
+
+            $params[] = $limit;
+            $params[] = $offset;
+
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute($params);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Get forum threads error: " . $e->getMessage());
+            return [];
         }
-
-        $query .= " ORDER BY ft.is_pinned DESC, ft.updated_at DESC
-                   LIMIT ? OFFSET ?";
-
-        $stmt = $this->conn->prepare($query);
-
-        if ($category !== '') {
-            $stmt->bind_param('sii', $category, $limit, $offset);
-        } else {
-            $stmt->bind_param('ii', $limit, $offset);
-        }
-
-        $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
     /**
@@ -220,40 +253,42 @@ class Community
      */
     public function getForumThreadWithReplies(int $thread_id): array
     {
-        $thread_query = "SELECT ft.*, u.full_name, u.avatar_path FROM Forum_Threads ft
-                        JOIN User u ON ft.creator_id = u.BRACU_ID
-                        WHERE ft.id = ?";
+        try {
+            $thread_query = "SELECT ft.*, u.full_name, u.avatar_path FROM Forum_Threads ft
+                            JOIN User u ON ft.creator_id = u.BRACU_ID
+                            WHERE ft.id = ?";
 
-        $stmt = $this->conn->prepare($thread_query);
-        $stmt->bind_param('i', $thread_id);
-        $stmt->execute();
-        $thread = $stmt->get_result()->fetch_assoc();
+            $stmt = $this->pdo->prepare($thread_query);
+            $stmt->execute([$thread_id]);
+            $thread = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$thread) {
+            if (!$thread) {
+                return [];
+            }
+
+            // Update view count
+            $update_query = "UPDATE Forum_Threads SET view_count = view_count + 1 WHERE id = ?";
+            $update_stmt = $this->pdo->prepare($update_query);
+            $update_stmt->execute([$thread_id]);
+
+            // Get replies
+            $replies_query = "SELECT fr.*, u.full_name, u.avatar_path FROM Forum_Replies fr
+                             JOIN User u ON fr.author_id = u.BRACU_ID
+                             WHERE fr.thread_id = ?
+                             ORDER BY fr.created_at ASC";
+
+            $replies_stmt = $this->pdo->prepare($replies_query);
+            $replies_stmt->execute([$thread_id]);
+            $replies = $replies_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return [
+                'thread' => $thread,
+                'replies' => $replies
+            ];
+        } catch (PDOException $e) {
+            error_log("Get forum thread error: " . $e->getMessage());
             return [];
         }
-
-        // Update view count
-        $update_query = "UPDATE Forum_Threads SET view_count = view_count + 1 WHERE id = ?";
-        $update_stmt = $this->conn->prepare($update_query);
-        $update_stmt->bind_param('i', $thread_id);
-        $update_stmt->execute();
-
-        // Get replies
-        $replies_query = "SELECT fr.*, u.full_name, u.avatar_path FROM Forum_Replies fr
-                         JOIN User u ON fr.author_id = u.BRACU_ID
-                         WHERE fr.thread_id = ?
-                         ORDER BY fr.created_at ASC";
-
-        $replies_stmt = $this->conn->prepare($replies_query);
-        $replies_stmt->bind_param('i', $thread_id);
-        $replies_stmt->execute();
-        $replies = $replies_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-
-        return [
-            'thread' => $thread,
-            'replies' => $replies
-        ];
     }
 
     /**
@@ -261,22 +296,24 @@ class Community
      */
     public function addForumReply(int $thread_id, string $author_id, string $reply_text): bool
     {
-        $query = "INSERT INTO Forum_Replies (thread_id, author_id, reply_text)
-                  VALUES (?, ?, ?)";
+        try {
+            $query = "INSERT INTO Forum_Replies (thread_id, author_id, reply_text)
+                      VALUES (?, ?, ?)";
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('iss', $thread_id, $author_id, $reply_text);
-
-        if ($stmt->execute()) {
-            // Update reply count
-            $update_query = "UPDATE Forum_Threads SET reply_count = reply_count + 1, updated_at = NOW()
-                           WHERE id = ?";
-            $update_stmt = $this->conn->prepare($update_query);
-            $update_stmt->bind_param('i', $thread_id);
-            $update_stmt->execute();
-            return true;
+            $stmt = $this->pdo->prepare($query);
+            if ($stmt->execute([$thread_id, $author_id, $reply_text])) {
+                // Update reply count
+                $update_query = "UPDATE Forum_Threads SET reply_count = reply_count + 1, updated_at = NOW()
+                               WHERE id = ?";
+                $update_stmt = $this->pdo->prepare($update_query);
+                $update_stmt->execute([$thread_id]);
+                return true;
+            }
+            return false;
+        } catch (PDOException $e) {
+            error_log("Add forum reply error: " . $e->getMessage());
+            return false;
         }
-        return false;
     }
 
     /**
@@ -284,14 +321,17 @@ class Community
      */
     public function awardBadge(string $bracu_id, string $badge_type, string $badge_name, ?string $description = null): bool
     {
-        $query = "INSERT INTO User_Badges (BRACU_ID, badge_type, badge_name, badge_description)
-                  VALUES (?, ?, ?, ?)
-                  ON DUPLICATE KEY UPDATE badge_name = ?, badge_description = ?";
+        try {
+            $query = "INSERT INTO User_Badges (BRACU_ID, badge_type, badge_name, badge_description)
+                      VALUES (?, ?, ?, ?)
+                      ON DUPLICATE KEY UPDATE badge_name = ?, badge_description = ?";
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('ssssss', $bracu_id, $badge_type, $badge_name, $description, $badge_name, $description);
-
-        return $stmt->execute();
+            $stmt = $this->pdo->prepare($query);
+            return $stmt->execute([$bracu_id, $badge_type, $badge_name, $description, $badge_name, $description]);
+        } catch (PDOException $e) {
+            error_log("Award badge error: " . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -299,12 +339,16 @@ class Community
      */
     public function getUserBadges(string $bracu_id): array
     {
-        $query = "SELECT * FROM User_Badges WHERE BRACU_ID = ? ORDER BY earned_at DESC";
+        try {
+            $query = "SELECT * FROM User_Badges WHERE BRACU_ID = ? ORDER BY earned_at DESC";
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('s', $bracu_id);
-        $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$bracu_id]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Get user badges error: " . $e->getMessage());
+            return [];
+        }
     }
 
     /**
@@ -312,24 +356,28 @@ class Community
      */
     public function checkAndAwardBadges(string $bracu_id): void
     {
-        // Get user stats
-        $ratings = $this->getUserRatingAverage($bracu_id);
-        $earnings = $this->getUserEarnings($bracu_id);
+        try {
+            // Get user stats
+            $ratings = $this->getUserRatingAverage($bracu_id);
+            $earnings = $this->getUserEarnings($bracu_id);
 
-        // Top Rated Badge (avg rating >= 4.5)
-        if ($ratings && $ratings['avg_rating'] >= 4.5 && $ratings['total_ratings'] >= 5) {
-            $this->awardBadge($bracu_id, 'top_rated', 'Top Rated', 'Earned with an average rating of 4.5+ stars');
-        }
+            // Top Rated Badge (avg rating >= 4.5)
+            if ($ratings && isset($ratings['avg_rating']) && $ratings['avg_rating'] >= 4.5 && $ratings['total_ratings'] >= 5) {
+                $this->awardBadge($bracu_id, 'top_rated', 'Top Rated', 'Earned with an average rating of 4.5+ stars');
+            }
 
-        // Trusted Badge (5+ completed jobs)
-        $completed_jobs = $this->getCompletedJobsCount($bracu_id);
-        if ($completed_jobs >= 5) {
-            $this->awardBadge($bracu_id, 'trusted', 'Trusted', 'Completed 5 or more jobs');
-        }
+            // Trusted Badge (5+ completed jobs)
+            $completed_jobs = $this->getCompletedJobsCount($bracu_id);
+            if ($completed_jobs >= 5) {
+                $this->awardBadge($bracu_id, 'trusted', 'Trusted', 'Completed 5 or more jobs');
+            }
 
-        // Responsive Badge (fast response time)
-        if ($this->isResponsive($bracu_id)) {
-            $this->awardBadge($bracu_id, 'responsive', 'Responsive', 'Consistently responds quickly to messages');
+            // Responsive Badge (fast response time)
+            if ($this->isResponsive($bracu_id)) {
+                $this->awardBadge($bracu_id, 'responsive', 'Responsive', 'Consistently responds quickly to messages');
+            }
+        } catch (Exception $e) {
+            error_log("Check badges error: " . $e->getMessage());
         }
     }
 
@@ -338,12 +386,15 @@ class Community
      */
     private function getUserEarnings(string $bracu_id): float
     {
-        $query = "SELECT COALESCE(SUM(amount), 0) as total FROM User_Earnings WHERE BRACU_ID = ? AND status = 'released'";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('s', $bracu_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        return (float) $result->fetch_assoc()['total'];
+        try {
+            $query = "SELECT COALESCE(SUM(amount), 0) as total FROM User_Earnings WHERE BRACU_ID = ? AND status = 'released'";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$bracu_id]);
+            return (float) ($stmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0);
+        } catch (PDOException $e) {
+            error_log("Get earnings error: " . $e->getMessage());
+            return 0.0;
+        }
     }
 
     /**
@@ -351,12 +402,15 @@ class Community
      */
     private function getCompletedJobsCount(string $bracu_id): int
     {
-        $query = "SELECT COUNT(*) as count FROM Working_on WHERE BRACU_ID = ? AND done_at IS NOT NULL";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('s', $bracu_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        return (int) $result->fetch_assoc()['count'];
+        try {
+            $query = "SELECT COUNT(*) as count FROM Working_on WHERE BRACU_ID = ? AND done_at IS NOT NULL";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$bracu_id]);
+            return (int) ($stmt->fetch(PDO::FETCH_ASSOC)['count'] ?? 0);
+        } catch (PDOException $e) {
+            error_log("Get completed jobs error: " . $e->getMessage());
+            return 0;
+        }
     }
 
     /**
@@ -364,17 +418,21 @@ class Community
      */
     private function isResponsive(string $bracu_id): bool
     {
-        $query = "SELECT AVG(TIME_TO_SEC(read_at) - TIME_TO_SEC(created_at)) as avg_response_time
-                  FROM Messages 
-                  WHERE recipient_id = ? AND read_at IS NOT NULL
-                  AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+        try {
+            $query = "SELECT AVG(TIMESTAMPDIFF(SECOND, created_at, read_at)) as avg_response_time
+                      FROM Messages
+                      WHERE recipient_id = ? AND read_at IS NOT NULL
+                      AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('s', $bracu_id);
-        $stmt->execute();
-        $result = $stmt->get_result()->fetch_assoc();
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$bracu_id]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // If average response time is less than 24 hours (86400 seconds)
-        return $result && $result['avg_response_time'] && $result['avg_response_time'] < 86400;
+            // If average response time is less than 24 hours (86400 seconds)
+            return $result && isset($result['avg_response_time']) && $result['avg_response_time'] && $result['avg_response_time'] < 86400;
+        } catch (PDOException $e) {
+            error_log("Check responsive error: " . $e->getMessage());
+            return false;
+        }
     }
 }

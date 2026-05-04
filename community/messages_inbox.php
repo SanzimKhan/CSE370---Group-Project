@@ -1,22 +1,25 @@
 <?php
 declare(strict_types=1);
+session_start();
 
 require_once __DIR__ . '/../includes/config.php';
-require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/community.php';
 
 // Check authentication
-require_login();
+if (!isset($_SESSION['user_bracu_id'])) {
+    header('Location: ../index.php');
+    exit;
+}
 
-$conn = getConnection();
-$community = new Community($conn);
+$pdo = db();
+$community = new Community($pdo);
 
 // Get conversations
-$conversations = $community->getUserConversations($_SESSION['user_id']);
+$conversations = $community->getUserConversations($_SESSION['user_bracu_id']);
 
 // Get unread count
-$unread_count = $community->getUnreadMessageCount($_SESSION['user_id']);
+$unread_count = $community->getUnreadMessageCount($_SESSION['user_bracu_id']);
 ?>
 
 <!DOCTYPE html>

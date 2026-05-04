@@ -1,15 +1,20 @@
 <?php
 declare(strict_types=1);
+session_start();
 
 require_once __DIR__ . '/includes/config.php';
-require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/search.php';
 
-require_login();
+// Check authentication
+if (!isset($_SESSION['user_bracu_id'])) {
+    header('Location: index.php');
+    exit;
+}
 
-$conn = getConnection();
-$search = new Search($conn);
+$pdo = db();
+$search = new Search($pdo);
 
 $query = $_GET['q'] ?? '';
 $category = $_GET['category'] ?? '';

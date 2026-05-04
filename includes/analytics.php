@@ -1,15 +1,13 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/db.php';
-
 class Analytics
 {
-    private $conn;
+    private $pdo;
 
-    public function __construct(mysqli $conn)
+    public function __construct(PDO $pdo)
     {
-        $this->conn = $conn;
+        $this->pdo = $pdo;
     }
 
     /**
@@ -26,23 +24,25 @@ class Analytics
         $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
         $data_json = $activity_data ? json_encode($activity_data) : null;
 
-        $query = "INSERT INTO Analytics_Activity 
+        $query = "INSERT INTO Analytics_Activity
                   (BRACU_ID, activity_type, gig_id, target_user, activity_data, ip_address, user_agent)
                   VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param(
-            'ssiisss',
-            $bracu_id,
-            $activity_type,
-            $gig_id,
-            $target_user,
-            $data_json,
-            $ip_address,
-            $user_agent
-        );
-
-        return $stmt->execute();
+        try {
+            $stmt = $this->pdo->prepare($query);
+            return $stmt->execute([
+                $bracu_id,
+                $activity_type,
+                $gig_id,
+                $target_user,
+                $data_json,
+                $ip_address,
+                $user_agent
+            ]);
+        } catch (PDOException $e) {
+            error_log("Analytics error: " . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -53,10 +53,14 @@ class Analytics
         $ip_address = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
 
         $query = "INSERT INTO Gig_Views (GID, BRACU_ID, viewer_ip) VALUES (?, ?, ?)";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('iss', $gig_id, $bracu_id, $ip_address);
 
-        return $stmt->execute();
+        try {
+            $stmt = $this->pdo->prepare($query);
+            return $stmt->execute([$gig_id, $bracu_id, $ip_address]);
+        } catch (PDOException $e) {
+            error_log("Gig view logging error: " . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -65,12 +69,15 @@ class Analytics
     public function getGigViewsCount(int $gig_id): int
     {
         $query = "SELECT COUNT(*) as count FROM Gig_Views WHERE GID = ?";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('i', $gig_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $row = $result->fetch_assoc();
-        return (int) $row['count'];
+        try {
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$gig_id]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return (int) ($row['count'] ?? 0);
+        } catch (PDOException $e) {
+            error_log("Get gig views error: " . $e->getMessage());
+            return 0;
+        }
     }
 
     /**
@@ -90,14 +97,112 @@ class Analytics
             'activity_breakdown' => []
         ];
 
-        // Total logins
-        $query = "SELECT COUNT(*) as count FROM Analytics_Activity 
-                  WHERE BRACU_ID = ? AND activity_type = 'login'";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param('s', $bracu_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $analytics['total_logins'] = (int) $result->fetch_assoc()['count'];
+        try {
+            // Total logins
+            $query = "SELECT COUNT(*) as count FROM Analytics_Activity
+                      WHERE BRACU_ID = ? AND activity_type = 'login'";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$bracu_id]);
+            $analytics['total_logins'] = (int) ($stmt->fetch(PDO::FETCH_ASSOC)['count'] ?? 0);
+
+            // Total gig views
+            $query = "SELECT COUNT(*) as count FROM Gig_Views WHERE BRACU_ID = ?";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$bracu_id]);
+            $analytics['total_gig_views'] = (int) ($stmt->fetch(PDO::FETCH_ASSOC)['count'] ?? 0);
+
+            // Gigs created
+            $query = "SELECT COUNT(*) as count FROM Gigs WHERE BRACU_ID = ?";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$bracu_id]);
+            $analytics['gigs_created'] = (int) ($stmt->fetch(PDO::FETCH_ASSOC)['count'] ?? 0);
+
+            // Gigs applied
+            $query = "SELECT COUNT(*) as count FROM Working_on WHERE BRACU_ID = ?";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$bracu_id]);
+            $analytics['gigs_applied'] = (int) ($stmt->fetch(PDO::FETCH_ASSOC)['count'] ?? 0);
+
+            // Total earnings
+            $query = "SELECT COALESCE(SUM(amount), 0) as total FROM User_Earnings WHERE BRACU_ID = ?";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$bracu_id]);
+            $analytics['total_earnings'] = (float) ($stmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0);
+
+            // Pending earnings
+            $query = "SELECT COALESCE(SUM(amount), 0) as total FROM User_Earnings WHERE BRACU_ID = ? AND status = 'pending'";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$bracu_id]);
+            $analytics['pending_earnings'] = (float) ($stmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0);
+
+            // Completion rate
+            $query = "SELECT
+                        COUNT(CASE WHEN status = 'done' THEN 1 END) as completed,
+                        COUNT(*) as total
+                      FROM Gigs WHERE BRACU_ID = ?";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$bracu_id]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $analytics['completion_rate'] = $result['total'] > 0 ? round(($result['completed'] / $result['total']) * 100, 2) : 0;
+
+            // Last activity
+            $query = "SELECT created_at FROM Analytics_Activity WHERE BRACU_ID = ? ORDER BY created_at DESC LIMIT 1";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$bracu_id]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $analytics['last_activity'] = $result['created_at'] ?? null;
+
+            // Activity breakdown
+            $query = "SELECT activity_type, COUNT(*) as count FROM Analytics_Activity WHERE BRACU_ID = ? GROUP BY activity_type";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$bracu_id]);
+            $analytics['activity_breakdown'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        } catch (PDOException $e) {
+            error_log("User analytics error: " . $e->getMessage());
+        }
+
+        return $analytics;
+    }
+
+    /**
+     * Get gig analytics
+     */
+    public function getGigAnalytics(int $gig_id): array
+    {
+        $analytics = [
+            'views' => 0,
+            'applications' => 0,
+            'earnings' => 0,
+            'view_details' => []
+        ];
+
+        try {
+            // Views
+            $query = "SELECT COUNT(*) as count FROM Gig_Views WHERE GID = ?";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$gig_id]);
+            $analytics['views'] = (int) ($stmt->fetch(PDO::FETCH_ASSOC)['count'] ?? 0);
+
+            // Applications
+            $query = "SELECT COUNT(*) as count FROM Working_on WHERE GID = ?";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$gig_id]);
+            $analytics['applications'] = (int) ($stmt->fetch(PDO::FETCH_ASSOC)['count'] ?? 0);
+
+            // Earnings
+            $query = "SELECT COALESCE(SUM(credit), 0) as total FROM Working_on WHERE GID = ?";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([$gig_id]);
+            $analytics['earnings'] = (float) ($stmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0);
+
+        } catch (PDOException $e) {
+            error_log("Gig analytics error: " . $e->getMessage());
+        }
+
+        return $analytics;
+    }
+}
 
         // Total gig views (for their gigs)
         $query = "SELECT COUNT(DISTINCT gv.id) as count FROM Gig_Views gv

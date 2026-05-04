@@ -1,60 +1,65 @@
 <?php
 declare(strict_types=1);
+session_start();
 
 require_once __DIR__ . '/../includes/config.php';
-require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/analytics.php';
 
 // Check authentication
-require_login();
-
-if ($_SESSION['preferred_mode'] !== 'hiring') {
-    header('Location: /index.php');
+if (!isset($_SESSION['user_bracu_id'])) {
+    header('Location: ../index.php');
     exit;
 }
 
-$conn = getConnection();
-$analytics = new Analytics($conn);
+// Check if user has hiring mode
+$pdo = db();
+$stmt = $pdo->prepare("SELECT preferred_mode FROM User WHERE BRACU_ID = ?");
+$stmt->execute([$_SESSION['user_bracu_id']]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user || ($user['preferred_mode'] !== 'hiring' && $_GET['mode'] !== 'hiring')) {
+    header('Location: ../index.php');
+    exit;
+}
+
+$analytics = new Analytics($pdo);
 
 // Get user analytics (from client perspective)
-$user_analytics = $analytics->getUserAnalytics($_SESSION['user_id']);
+$user_analytics = $analytics->getUserAnalytics($_SESSION['user_bracu_id']);
 
 // Get spending statistics
-$query = "SELECT 
+$query = "SELECT
             COUNT(DISTINCT GID) as total_gigs_posted,
             SUM(CREDIT_AMOUNT) as total_spent,
             COUNT(CASE WHEN STATUS = 'done' THEN 1 END) as completed_gigs,
             COUNT(CASE WHEN STATUS = 'pending' THEN 1 END) as pending_gigs,
             COUNT(CASE WHEN STATUS = 'listed' THEN 1 END) as listed_gigs
-          FROM Gigs 
+          FROM Gigs
           WHERE BRACU_ID = ?";
-$stmt = $conn->prepare($query);
-$stmt->bind_param('s', $_SESSION['user_id']);
-$stmt->execute();
-$spending = $stmt->get_result()->fetch_assoc();
+$stmt = $pdo->prepare($query);
+$stmt->execute([$_SESSION['user_bracu_id']]);
+$spending = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Get average per gig
-$query = "SELECT 
+$query = "SELECT
             AVG(CREDIT_AMOUNT) as avg_credit,
             MIN(CREDIT_AMOUNT) as min_credit,
             MAX(CREDIT_AMOUNT) as max_credit
-          FROM Gigs 
+          FROM Gigs
           WHERE BRACU_ID = ?";
-$stmt = $conn->prepare($query);
-$stmt->bind_param('s', $_SESSION['user_id']);
-$stmt->execute();
-$credits_stats = $stmt->get_result()->fetch_assoc();
+$stmt = $pdo->prepare($query);
+$stmt->execute([$_SESSION['user_bracu_id']]);
+$credits_stats = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Get category breakdown
 $query = "SELECT CATAGORY, COUNT(*) as count, SUM(CREDIT_AMOUNT) as total_spent
-          FROM Gigs 
+          FROM Gigs
           WHERE BRACU_ID = ?
           GROUP BY CATAGORY";
-$stmt = $conn->prepare($query);
-$stmt->bind_param('s', $_SESSION['user_id']);
-$stmt->execute();
-$category_breakdown = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt = $pdo->prepare($query);
+$stmt->execute([$_SESSION['user_bracu_id']]);
+$category_breakdown = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>

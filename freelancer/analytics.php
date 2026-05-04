@@ -1,34 +1,40 @@
 <?php
 declare(strict_types=1);
+session_start();
 
 require_once __DIR__ . '/../includes/config.php';
-require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/analytics.php';
 
 // Check authentication
-require_login();
-
-if ($_SESSION['preferred_mode'] !== 'working') {
-    header('Location: /index.php');
+if (!isset($_SESSION['user_bracu_id'])) {
+    header('Location: ../index.php');
     exit;
 }
 
-$conn = getConnection();
-$analytics = new Analytics($conn);
+// Check if user has working mode
+$pdo = db();
+$stmt = $pdo->prepare("SELECT preferred_mode FROM User WHERE BRACU_ID = ?");
+$stmt->execute([$_SESSION['user_bracu_id']]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user || ($user['preferred_mode'] !== 'working' && $_GET['mode'] !== 'working')) {
+    header('Location: ../index.php');
+    exit;
+}
+
+$analytics = new Analytics($pdo);
 
 // Get user analytics
-$user_analytics = $analytics->getUserAnalytics($_SESSION['user_id']);
+$user_analytics = $analytics->getUserAnalytics($_SESSION['user_bracu_id']);
 
 // Get gig-specific analytics
 $gig_analytics = [];
 $query = "SELECT GID FROM Gigs WHERE BRACU_ID = ? LIMIT 10";
-$stmt = $conn->prepare($query);
-$stmt->bind_param('s', $_SESSION['user_id']);
-$stmt->execute();
-$result = $stmt->get_result();
+$stmt = $pdo->prepare($query);
+$stmt->execute([$_SESSION['user_bracu_id']]);
 
-while ($row = $result->fetch_assoc()) {
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $gig_analytics[$row['GID']] = $analytics->getGigAnalytics($row['GID']);
 }
 ?>
