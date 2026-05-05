@@ -5,6 +5,7 @@ require_once dirname(__DIR__) . '/includes/config.php';
 require_once dirname(__DIR__) . '/includes/db.php';
 require_once dirname(__DIR__) . '/includes/auth.php';
 require_once dirname(__DIR__) . '/includes/community.php';
+require_once dirname(__DIR__) . '/includes/analytics.php';
 
 // Require login
 $user = require_login();
@@ -51,6 +52,10 @@ if (is_post_request()) {
 
     if ($message_text) {
         $community->sendMessage($user['BRACU_ID'], $contact_id, $message_text, $gig_id ?: null);
+
+        // Track message send
+        $analytics = new Analytics($pdo);
+        $analytics->logActivity($user['BRACU_ID'], 'message_send', $gig_id ?: null, $contact_id);
 
         // Mark messages as read
         $community->markMessagesAsRead($contact_id, $user['BRACU_ID']);

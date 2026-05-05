@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/analytics.php';
 
 $profileUserId = normalize_bracu_id((string) ($_GET['id'] ?? ''));
 if ($profileUserId === '') {
@@ -27,6 +28,13 @@ if (!$profile) {
     http_response_code(404);
     echo 'Profile not found.';
     exit;
+}
+
+// Track profile view
+$currentUser = current_user();
+if ($currentUser && $currentUser['BRACU_ID'] !== $profileUserId) {
+    $analytics = new Analytics($pdo);
+    $analytics->logActivity($currentUser['BRACU_ID'], 'profile_view', null, $profileUserId);
 }
 
 $ratingsStatement = $pdo->prepare(

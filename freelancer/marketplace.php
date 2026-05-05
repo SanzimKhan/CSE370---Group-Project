@@ -4,8 +4,10 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/includes/auth.php';
 require_once dirname(__DIR__) . '/includes/wallet.php';
 require_once dirname(__DIR__) . '/includes/mail.php';
+require_once dirname(__DIR__) . '/includes/analytics.php';
 
 $user = require_login();
+$analytics = new Analytics(db());
 
 if (is_post_request()) {
     enforce_csrf_or_fail('freelancer/marketplace.php');
@@ -17,6 +19,9 @@ if (is_post_request()) {
         $result = accept_gig($gigId, $user['BRACU_ID']);
 
         if ($result['ok']) {
+            // Track gig application
+            $analytics->logActivity($user['BRACU_ID'], 'gig_apply', $gigId);
+            
             $client = find_user_by_bracu_id($result['gig']['BRACU_ID']);
 
             if ($client) {
@@ -64,6 +69,11 @@ $sql .= ' ORDER BY g.created_at DESC';
 $statement = db()->prepare($sql);
 $statement->execute($params);
 $gigs = $statement->fetchAll();
+
+// Track gig views for displayed gigs
+foreach ($gigs as $gig) {
+    $analytics->logGigView((int) $gig['GID'], $user['BRACU_ID']);
+}
 
 $pageTitle = 'Available Gig List';
 require_once dirname(__DIR__) . '/includes/header.php';

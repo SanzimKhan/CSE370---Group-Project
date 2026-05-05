@@ -18,7 +18,8 @@ $stmt = $pdo->prepare("SELECT preferred_mode FROM User WHERE BRACU_ID = ?");
 $stmt->execute([$_SESSION['user_bracu_id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$user || ($user['preferred_mode'] !== 'working' && $_GET['mode'] !== 'working')) {
+// Allow access if user exists AND (preferred_mode is 'working' OR mode=working is in URL)
+if (!$user || ($user['preferred_mode'] !== 'working' && (!isset($_GET['mode']) || $_GET['mode'] !== 'working'))) {
     header('Location: ../index.php');
     exit;
 }

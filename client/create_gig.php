@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/includes/auth.php';
+require_once dirname(__DIR__) . '/includes/analytics.php';
 
 $user = require_login();
 $error = null;
@@ -47,6 +48,15 @@ if (is_post_request()) {
             'category' => $category,
             'deadline' => $deadline,
             'status' => 'listed',
+        ]);
+
+        $gigId = (int) db()->lastInsertId();
+        
+        // Track gig creation
+        $analytics = new Analytics(db());
+        $analytics->logActivity($user['BRACU_ID'], 'gig_create', $gigId, null, [
+            'category' => $category,
+            'credit_amount' => $creditAmount
         ]);
 
         set_flash('success', 'Gig posted successfully and listed in the marketplace.');
