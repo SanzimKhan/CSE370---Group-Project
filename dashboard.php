@@ -55,6 +55,7 @@ require_once __DIR__ . '/includes/header.php';
     <h1>Hello, <?= h($user['BRACU_ID']) ?></h1>
     <p class="muted">Use the same account as a client and as a freelancer. Your e-wallet updates automatically after a gig is completed.</p>
     <p class="muted">Current login mode: <strong><?= h($mode === 'hiring' ? 'Hiring (Post jobs)' : 'Working (Apply to jobs)') ?></strong></p>
+    <p class="muted">All accounts start with ৳500. Credits circulate through project payments and transfers only.</p>
 </section>
 
 <!-- Credit Management Section -->
@@ -76,7 +77,6 @@ require_once __DIR__ . '/includes/header.php';
         </div>
     </div>
     <p style="margin-top: 1rem;">
-        <a class="btn btn-primary" href="credits/topup.php">➕ Top Up Credits</a>
         <a class="btn btn-ghost" href="credits/history.php">📊 View History</a>
         <a class="btn btn-ghost" href="profile.php">👤 Wallet Details</a>
     </p>

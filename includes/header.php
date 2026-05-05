@@ -30,9 +30,7 @@ $flash = get_flash();
                 <a href="<?= BASE_URL ?>dashboard.php">Dashboard</a>
                 <a href="<?= BASE_URL ?>profile.php">Profile</a>
                 <a href="<?= BASE_URL ?>public_profile.php?id=<?= urlencode($activeUser['BRACU_ID']) ?>" target="_blank">Public Profile</a>
-                
-                <!-- Credit Wallet -->
-                <a href="<?= BASE_URL ?>credits/topup.php" style="color: #28a745; font-weight: 600;">
+                <a href="<?= BASE_URL ?>credits/history.php" style="color: #28a745; font-weight: 600;">
                     💰 ৳<?= number_format(get_user_credit_balance($activeUser['BRACU_ID']), 0) ?>
                 </a>
                 

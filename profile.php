@@ -165,8 +165,8 @@ require_once __DIR__ . '/includes/header.php';
                 <p style="font-size: 1.8em; font-weight: bold; color: #28a745;">৳<?= number_format(get_user_credit_balance($user['BRACU_ID']), 2) ?></p>
             </div>
             <p>
-                <a class="btn btn-primary" href="credits/topup.php" style="width: 100%; text-align: center; margin-bottom: 0.5rem;">➕ Add Credits</a>
-                <a class="btn btn-ghost" href="credits/history.php" style="width: 100%; text-align: center;">📊 View History</a>
+                <a class="btn btn-ghost" href="credits/history.php" style="width: 100%; text-align: center; margin-bottom: 0.5rem;">📊 View History</a>
+                <a class="btn btn-ghost" href="public_profile.php?id=<?= urlencode($user['BRACU_ID']) ?>" style="width: 100%; text-align: center;">🌐 Public Profile</a>
             </p>
         </div>
 

@@ -4,7 +4,7 @@
  * 
  * Tests all credit functionality including:
  * - Credit balance operations
- * - Top-ups with dummy payments
+ * - Circulation through project payments and transfers
  * - Credit history tracking
  * - Credit bonuses
  * - Credit limits and restrictions
@@ -70,11 +70,6 @@ class CreditTestSuite {
         $this->testAddCredits();
         $this->testDeductCredits();
         $this->testInsufficientCredits();
-        
-        // Top-up tests
-        $this->testCreateTopupRequest();
-        $this->testProcessDummyPayment();
-        $this->testTopupBonusCalculation();
         
         // Credit history
         $this->testCreditHistoryTracking();
@@ -174,94 +169,11 @@ class CreditTestSuite {
     }
 
     // ================================================================
-    // TOP-UP TESTS
-    // ================================================================
-
-    private function testCreateTopupRequest(): void {
-        echo "TEST 5: Create Top-Up Request\n";
-        try {
-            $result = create_topup_request($this->testUser, 5000, 'dummy');
-            $this->assert($result['ok'], "Should create topup request");
-            $this->assert(isset($result['topup_id']), "Should return topup_id");
-            echo "  ✓ Created top-up request\n";
-            echo "  ✓ Top-up ID: " . substr($result['topup_id'], 0, 15) . "...\n";
-            $this->pass();
-        } catch (Exception $e) {
-            echo "  ✗ Error: " . $e->getMessage() . "\n";
-            $this->fail();
-        }
-    }
-
-    private function testProcessDummyPayment(): void {
-        echo "TEST 6: Process Dummy Payment\n";
-        try {
-            $result = create_topup_request($this->testUser, 3000, 'dummy');
-            $topup_id = $result['topup_id'];
-            
-            $initialBalance = get_user_credit_balance($this->testUser);
-            $paymentResult = process_dummy_payment($topup_id);
-            $newBalance = get_user_credit_balance($this->testUser);
-            
-            if ($paymentResult['ok']) {
-                $this->assert($newBalance > $initialBalance, "Balance should increase after payment");
-                echo "  ✓ Payment processed successfully\n";
-                echo "  ✓ Amount: ৳" . number_format((float) $paymentResult['amount'], 2) . "\n";
-                echo "  ✓ Bonus: ৳" . number_format((float) $paymentResult['bonus'], 2) . "\n";
-                echo "  ✓ Total received: ৳" . number_format((float) $paymentResult['total'], 2) . "\n";
-                echo "  ✓ Transaction reference: " . substr($paymentResult['transaction_reference'], 0, 15) . "...\n";
-                $this->pass();
-            } else {
-                // Simulate failed payment (acceptable in test)
-                echo "  ✓ Payment simulation executed (result: " . ($paymentResult['ok'] ? 'success' : 'failed') . ")\n";
-                $this->pass();
-            }
-        } catch (Exception $e) {
-            echo "  ✗ Error: " . $e->getMessage() . "\n";
-            $this->fail();
-        }
-    }
-
-    private function testTopupBonusCalculation(): void {
-        echo "TEST 7: Top-Up Bonus Calculation (5%)\n";
-        try {
-            $testAmount = 2000;
-            $expectedBonus = round($testAmount * 0.05, 2);
-            
-            $result = create_topup_request($this->testUser, $testAmount, 'dummy');
-            $topup_id = $result['topup_id'];
-            
-            $paymentResult = process_dummy_payment($topup_id);
-            
-            if ($paymentResult['ok']) {
-                $this->assert(
-                    abs($paymentResult['bonus'] - $expectedBonus) < 0.01,
-                    "Bonus should be 5% of amount"
-                );
-                $this->assert(
-                    $paymentResult['total'] == $testAmount + $paymentResult['bonus'],
-                    "Total should be amount + bonus"
-                );
-                echo "  ✓ Bonus correctly calculated at 5%\n";
-                echo "  ✓ Amount: ৳" . number_format($testAmount, 2) . "\n";
-                echo "  ✓ Bonus (5%): ৳" . number_format($paymentResult['bonus'], 2) . "\n";
-                echo "  ✓ Total: ৳" . number_format($paymentResult['total'], 2) . "\n";
-                $this->pass();
-            } else {
-                echo "  ⚠ Payment failed (simulated failure is acceptable)\n";
-                $this->pass();
-            }
-        } catch (Exception $e) {
-            echo "  ✗ Error: " . $e->getMessage() . "\n";
-            $this->fail();
-        }
-    }
-
-    // ================================================================
     // CREDIT HISTORY TESTS
     // ================================================================
 
     private function testCreditHistoryTracking(): void {
-        echo "TEST 8: Credit History Tracking\n";
+        echo "TEST 5: Credit History Tracking\n";
         try {
             $history = get_credit_history($this->testUser, 10);
             $this->assert(is_array($history), "Should return array of history");
@@ -292,7 +204,7 @@ class CreditTestSuite {
     }
 
     private function testCreditSummary(): void {
-        echo "TEST 9: Credit Summary\n";
+        echo "TEST 6: Credit Summary\n";
         try {
             $summary = get_credit_summary($this->testUser);
             
@@ -320,7 +232,7 @@ class CreditTestSuite {
     // ================================================================
 
     private function testGrantBonus(): void {
-        echo "TEST 10: Grant Bonus Credits\n";
+        echo "TEST 7: Grant Bonus Credits\n";
         try {
             $result = grant_bonus($this->testUser, 150, 'promotion', 'Test promotion bonus', 'system');
             $this->assert($result['ok'], "Should grant bonus");
@@ -336,7 +248,7 @@ class CreditTestSuite {
     }
 
     private function testGetAvailableBonuses(): void {
-        echo "TEST 11: Get Available Bonuses\n";
+        echo "TEST 8: Get Available Bonuses\n";
         try {
             grant_bonus($this->testUser, 100, 'promotion', 'Test', 'system');
             $bonuses = get_available_bonuses($this->testUser);
@@ -360,7 +272,7 @@ class CreditTestSuite {
     // ================================================================
 
     private function testCreditLimitCheck(): void {
-        echo "TEST 12: Credit Limit Check\n";
+        echo "TEST 9: Credit Limit Check\n";
         try {
             $result = can_spend_credits($this->testUser, 1000);
             $this->assert(isset($result['allowed']), "Should return allowed status");
@@ -378,7 +290,7 @@ class CreditTestSuite {
     }
 
     private function testDailySpendingLimit(): void {
-        echo "TEST 13: Daily Spending Limit\n";
+        echo "TEST 10: Daily Spending Limit\n";
         try {
             $daily = get_today_spent($this->testUser);
             $this->assert(is_float($daily) && $daily >= 0, "Should return daily spending");
@@ -401,7 +313,7 @@ class CreditTestSuite {
     // ================================================================
 
     private function testNegativeAmounts(): void {
-        echo "TEST 14: Negative Amount Rejection\n";
+        echo "TEST 11: Negative Amount Rejection\n";
         try {
             $result = add_credits($this->testUser, -100, 'debit');
             $this->assert(!$result['ok'], "Should reject negative amounts");
@@ -418,10 +330,10 @@ class CreditTestSuite {
     }
 
     private function testMaximumAmounts(): void {
-        echo "TEST 15: Maximum Amount Validation\n";
+        echo "TEST 12: Maximum Amount Validation\n";
         try {
-            $result = create_topup_request($this->testUser, 2000000, 'dummy');
-            $this->assert(!$result['ok'], "Should reject amounts exceeding maximum");
+            $result = validate_credit_amount(2000000);
+            $this->assert(!$result['valid'], "Should reject amounts exceeding maximum");
             
             echo "  ✓ Maximum amount limits enforced\n";
             echo "  ✓ Error: " . $result['message'] . "\n";
@@ -433,7 +345,7 @@ class CreditTestSuite {
     }
 
     private function testConcurrentTransactions(): void {
-        echo "TEST 16: Concurrent Transaction Safety\n";
+        echo "TEST 13: Concurrent Transaction Safety\n";
         try {
             $initialBalance = get_user_credit_balance($this->testUser);
             
@@ -458,7 +370,7 @@ class CreditTestSuite {
     }
 
     private function testTransferCredits(): void {
-        echo "TEST 17: Transfer Credits Between Users\n";
+        echo "TEST 14: Transfer Credits Between Users\n";
         try {
             // Add credits to test user first
             add_credits($this->testUser, 1000, 'bonus');
@@ -488,7 +400,7 @@ class CreditTestSuite {
     }
 
     private function testFormattingAndValidation(): void {
-        echo "TEST 18: Formatting and Validation\n";
+        echo "TEST 15: Formatting and Validation\n";
         try {
             // Test credit amount validation
             $valid1 = validate_credit_amount(100);
