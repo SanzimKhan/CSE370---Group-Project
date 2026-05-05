@@ -11,6 +11,7 @@ $user = require_login();
 
 // Get conversation user ID
 $contact_id = $_GET['user'] ?? null;
+$gig_context = (int) ($_GET['gig'] ?? 0);
 
 if (!$contact_id) {
     redirect('messages_inbox.php');
@@ -29,9 +30,21 @@ if (!$contact) {
     redirect('messages_inbox.php');
 }
 
+// Validate gig context if provided (must be owned by current user or freelancer)
+$gig_info = null;
+if ($gig_context > 0) {
+    $query = "SELECT g.*, w.BRACU_ID as freelancer_id FROM Gigs g
+              LEFT JOIN Working_on w ON w.GID = g.GID
+              WHERE g.GID = ? AND (g.BRACU_ID = ? OR w.BRACU_ID = ?)
+              LIMIT 1";
+    $stmt = $pdo->prepare($query);
+    $stmt->execute([$gig_context, $user['BRACU_ID'], $user['BRACU_ID']]);
+    $gig_info = $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
 // Handle message sending
 if (is_post_request()) {
-    enforce_csrf_or_fail('messages.php?user=' . urlencode($contact_id));
+    enforce_csrf_or_fail('community/messages.php?user=' . urlencode($contact_id));
 
     $message_text = trim($_POST['message_text'] ?? '');
     $gig_id = (int) ($_POST['gig_id'] ?? 0);
@@ -42,7 +55,7 @@ if (is_post_request()) {
         // Mark messages as read
         $community->markMessagesAsRead($contact_id, $user['BRACU_ID']);
 
-        redirect('messages.php?user=' . urlencode($contact_id));
+        redirect('community/messages.php?user=' . urlencode($contact_id));
     }
 }
 
@@ -96,6 +109,15 @@ require_once dirname(__DIR__) . '/includes/header.php';
     <!-- Message Input -->
     <form method="POST" action="" class="message-form">
         <?= csrf_field() ?>
+        
+        <!-- Gig Context Info -->
+        <?php if ($gig_info): ?>
+            <div style="background: #f0f4f8; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; border-left: 3px solid #667eea;">
+                <strong>📋 Related Gig:</strong> Gig #<?= (int) $gig_info['GID'] ?> - <?= h(substr($gig_info['LIST_OF_GIGS'], 0, 60)) ?><?= strlen($gig_info['LIST_OF_GIGS']) > 60 ? '...' : '' ?><br>
+                <small style="color: #666;">Category: <?= h($gig_info['CATAGORY']) ?> | Deadline: <?= h($gig_info['DEADLINE']) ?></small>
+            </div>
+        <?php endif; ?>
+        
         <textarea name="message_text" placeholder="Type your message..." required class="message-input"></textarea>
         
         <?php if (count($user_gigs) > 0): ?>
@@ -104,7 +126,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
                 <select name="gig_id" class="message-select">
                     <option value="">-- Select a gig --</option>
                     <?php foreach ($user_gigs as $gig): ?>
-                        <option value="<?= $gig['GID'] ?>">
+                        <option value="<?= $gig['GID'] ?>" <?= $gig_info && $gig_info['GID'] == $gig['GID'] ? 'selected' : '' ?>>
                             Gig #<?= $gig['GID'] ?> - <?= h(substr($gig['LIST_OF_GIGS'], 0, 50)) ?>
                         </option>
                     <?php endforeach; ?>

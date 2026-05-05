@@ -95,6 +95,7 @@ require_once __DIR__ . '/includes/header.php';
             </select>
         </div>
         <button type="submit">Login</button>
+        <p style="display:flex;">Don't have an account? <a href="/signup.php">Signup</a></p>
     </form>
 </section>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

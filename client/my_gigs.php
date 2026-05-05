@@ -90,13 +90,21 @@ require_once dirname(__DIR__) . '/includes/header.php';
                         </td>
                         <td><?= h($gig['freelancer_id'] ?? '-') ?></td>
                         <td>
-                            <?php if ($gig['STATUS'] === 'pending'): ?>
-                                <form class="inline-form" method="post" action="my_gigs.php">
-                                    <?= csrf_field() ?>
-                                    <input type="hidden" name="action" value="mark_done">
-                                    <input type="hidden" name="gid" value="<?= (int) $gig['GID'] ?>">
-                                    <button class="btn-success" type="submit">Mark as Done</button>
-                                </form>
+                            <?php if ($gig['STATUS'] === 'pending' || $gig['STATUS'] === 'done'): ?>
+                                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                    <?php if ($gig['STATUS'] === 'pending'): ?>
+                                        <form class="inline-form" method="post" action="my_gigs.php">
+                                            <?= csrf_field() ?>
+                                            <input type="hidden" name="action" value="mark_done">
+                                            <input type="hidden" name="gid" value="<?= (int) $gig['GID'] ?>">
+                                            <button class="btn-success" type="submit">Mark as Done</button>
+                                        </form>
+                                    <?php endif; ?>
+
+                                    <?php if ($gig['freelancer_id']): ?>
+                                        <a href="<?= BASE_URL ?>community/messages.php?user=<?= urlencode($gig['freelancer_id']) ?>&gig=<?= (int) $gig['GID'] ?>" class="btn btn-primary">💬 Message</a>
+                                    <?php endif; ?>
+                                </div>
                             <?php else: ?>
                                 <span class="muted">-</span>
                             <?php endif; ?>
