@@ -52,10 +52,10 @@ CREATE TABLE IF NOT EXISTS `Working_on` (
         ON DELETE CASCADE
 );
 
-CREATE INDEX idx_gigs_status ON `Gigs` (STATUS);
-CREATE INDEX idx_gigs_category ON `Gigs` (CATAGORY);
-CREATE INDEX idx_working_on_user ON `Working_on` (BRACU_ID);
-CREATE INDEX idx_user_is_admin ON `User` (is_admin);
+CREATE INDEX IF NOT EXISTS idx_gigs_status ON `Gigs` (STATUS);
+CREATE INDEX IF NOT EXISTS idx_gigs_category ON `Gigs` (CATAGORY);
+CREATE INDEX IF NOT EXISTS idx_working_on_user ON `Working_on` (BRACU_ID);
+CREATE INDEX IF NOT EXISTS idx_user_is_admin ON `User` (is_admin);
 
 CREATE TABLE IF NOT EXISTS `Analytics_Activity` (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -222,21 +222,21 @@ CREATE TABLE IF NOT EXISTS `Gig_Search_Index` (
         ON DELETE CASCADE
 );
 
-CREATE INDEX idx_analytics_user ON `Analytics_Activity` (BRACU_ID);
-CREATE INDEX idx_analytics_type ON `Analytics_Activity` (activity_type);
-CREATE INDEX idx_analytics_created ON `Analytics_Activity` (created_at);
-CREATE INDEX idx_gig_views_gid ON `Gig_Views` (GID);
-CREATE INDEX idx_gig_views_user ON `Gig_Views` (BRACU_ID);
-CREATE INDEX idx_earnings_user ON `User_Earnings` (BRACU_ID);
-CREATE INDEX idx_earnings_status ON `User_Earnings` (status);
-CREATE INDEX idx_ratings_rater ON `Ratings` (rater_id);
-CREATE INDEX idx_ratings_ratee ON `Ratings` (ratee_id);
-CREATE INDEX idx_ratings_gig ON `Ratings` (gig_id);
-CREATE INDEX idx_messages_sender ON `Messages` (sender_id);
-CREATE INDEX idx_messages_recipient ON `Messages` (recipient_id);
-CREATE INDEX idx_messages_read ON `Messages` (is_read);
-CREATE INDEX idx_forum_threads_creator ON `Forum_Threads` (creator_id);
-CREATE INDEX idx_forum_threads_category ON `Forum_Threads` (category);
-CREATE INDEX idx_forum_threads_pinned ON `Forum_Threads` (is_pinned);
-CREATE INDEX idx_forum_replies_thread ON `Forum_Replies` (thread_id);
-CREATE INDEX idx_forum_replies_author ON `Forum_Replies` (author_id);
+CREATE INDEX IF NOT EXISTS idx_analytics_user ON `Analytics_Activity` (BRACU_ID);
+CREATE INDEX IF NOT EXISTS idx_analytics_type ON `Analytics_Activity` (activity_type);
+CREATE INDEX IF NOT EXISTS idx_analytics_created ON `Analytics_Activity` (created_at);
+CREATE INDEX IF NOT EXISTS idx_gig_views_gid ON `Gig_Views` (GID);
+CREATE INDEX IF NOT EXISTS idx_gig_views_user ON `Gig_Views` (BRACU_ID);
+CREATE INDEX IF NOT EXISTS idx_earnings_user ON `User_Earnings` (BRACU_ID);
+CREATE INDEX IF NOT EXISTS idx_earnings_status ON `User_Earnings` (status);
+CREATE INDEX IF NOT EXISTS idx_ratings_rater ON `Ratings` (rater_id);
+CREATE INDEX IF NOT EXISTS idx_ratings_ratee ON `Ratings` (ratee_id);
+CREATE INDEX IF NOT EXISTS idx_ratings_gig ON `Ratings` (gig_id);
+CREATE INDEX IF NOT EXISTS idx_messages_sender ON `Messages` (sender_id);
+CREATE INDEX IF NOT EXISTS idx_messages_recipient ON `Messages` (recipient_id);
+CREATE INDEX IF NOT EXISTS idx_messages_read ON `Messages` (is_read);
+CREATE INDEX IF NOT EXISTS idx_forum_threads_creator ON `Forum_Threads` (creator_id);
+CREATE INDEX IF NOT EXISTS idx_forum_threads_category ON `Forum_Threads` (category);
+CREATE INDEX IF NOT EXISTS idx_forum_threads_pinned ON `Forum_Threads` (is_pinned);
+CREATE INDEX IF NOT EXISTS idx_forum_replies_thread ON `Forum_Replies` (thread_id);
+CREATE INDEX IF NOT EXISTS idx_forum_replies_author ON `Forum_Replies` (author_id);

@@ -1,234 +1,71 @@
 <?php
 declare(strict_types=1);
-session_start();
 
-require_once __DIR__ . '/../includes/config.php';
-require_once __DIR__ . '/../includes/db.php';
-require_once __DIR__ . '/../includes/community.php';
+require_once dirname(__DIR__) . '/includes/config.php';
+require_once dirname(__DIR__) . '/includes/db.php';
+require_once dirname(__DIR__) . '/includes/auth.php';
+require_once dirname(__DIR__) . '/includes/community.php';
 
-// Check authentication
-if (!isset($_SESSION['user_bracu_id'])) {
-    header('Location: ../index.php');
-    exit;
-}
+// Require login
+$user = require_login();
+$pageTitle = 'Messages';
 
 $pdo = db();
 $community = new Community($pdo);
 
 // Get conversations
-$conversations = $community->getUserConversations($_SESSION['user_bracu_id']);
+$conversations = $community->getUserConversations($user['BRACU_ID']);
 
 // Get unread count
-$unread_count = $community->getUnreadMessageCount($_SESSION['user_bracu_id']);
+$unread_count = $community->getUnreadMessageCount($user['BRACU_ID']);
+
+require_once dirname(__DIR__) . '/includes/header.php';
 ?>
+<section class="card">
+    <div class="kicker">Community</div>
+    <h1>Messages</h1>
+    <?php if ($unread_count > 0): ?>
+        <p class="muted"><?= $unread_count ?> unread message<?= $unread_count !== 1 ? 's' : '' ?></p>
+    <?php else: ?>
+        <p class="muted">Your message inbox</p>
+    <?php endif; ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Messages - BRACU Freelance Marketplace</title>
-    <link rel="stylesheet" href="../assets/css/styles.css">
-    <style>
-        .messages-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .messages-header {
-            margin-bottom: 30px;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 20px;
-        }
-
-        .messages-title {
-            font-size: 28px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .unread-badge {
-            display: inline-block;
-            background: #dc3545;
-            color: white;
-            border-radius: 20px;
-            padding: 2px 8px;
-            font-size: 12px;
-            margin-left: 10px;
-        }
-
-        .search-bar {
-            margin-bottom: 20px;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        .conversation-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .conversation-item {
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: flex;
-            gap: 15px;
-            color: inherit;
-        }
-
-        .conversation-item:hover {
-            background: #f9f9f9;
-            border-color: #007bff;
-            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
-        }
-
-        .conversation-item.unread {
-            background: #f0f8ff;
-            border-left: 4px solid #007bff;
-        }
-
-        .conversation-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            object-fit: cover;
-            flex-shrink: 0;
-        }
-
-        .conversation-content {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .conversation-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-
-        .conversation-name {
-            font-weight: bold;
-            color: #333;
-            font-size: 15px;
-        }
-
-        .conversation-time {
-            font-size: 12px;
-            color: #999;
-        }
-
-        .conversation-message {
-            color: #666;
-            font-size: 13px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 5px;
-        }
-
-        .conversation-item.unread .conversation-message {
-            font-weight: bold;
-            color: #007bff;
-        }
-
-        .conversation-meta {
-            font-size: 12px;
-            color: #999;
-        }
-
-        .unread-indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #007bff;
-            flex-shrink: 0;
-        }
-
-        .no-conversations {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-        }
-
-        .back-link {
-            display: inline-block;
-            margin-bottom: 20px;
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        .back-link:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
-    <?php include __DIR__ . '/../includes/header.php'; ?>
-
-    <div class="messages-container">
-        <a href="../index.php" class="back-link">← Back Home</a>
-
-        <div class="messages-header">
-            <h1 class="messages-title">
-                Messages
-                <?php if ($unread_count > 0): ?>
-                    <span class="unread-badge"><?php echo $unread_count; ?> Unread</span>
-                <?php endif; ?>
-            </h1>
+    <!-- Conversations List -->
+    <?php if (count($conversations) > 0): ?>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Last Message</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($conversations as $conv): ?>
+                        <tr>
+                            <td><?= h($conv['full_name']) ?></td>
+                            <td><?= h(substr($conv['last_message'], 0, 60)) ?></td>
+                            <td><?= date('M d H:i', strtotime($conv['last_message_time'])) ?></td>
+                            <td>
+                                <?php if ($conv['unread_count'] > 0): ?>
+                                    <span class="badge-unread"><?= $conv['unread_count'] ?> unread</span>
+                                <?php else: ?>
+                                    <span class="muted">Read</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <a href="messages.php?user=<?= urlencode($conv['contact_id']) ?>" class="button-secondary">Open</a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         </div>
-
-        <!-- Conversations List -->
-        <div class="conversation-list">
-            <?php if (count($conversations) > 0): ?>
-                <?php foreach ($conversations as $conv): ?>
-                    <a href="messages.php?user=<?php echo urlencode($conv['contact_id']); ?>" class="conversation-item <?php echo $conv['unread_count'] > 0 ? 'unread' : ''; ?>">
-                        <img src="<?php echo htmlspecialchars($conv['avatar_path'] ?? '/assets/uploads/avatars/default.png'); ?>" 
-                             alt="<?php echo htmlspecialchars($conv['full_name']); ?>" 
-                             class="conversation-avatar">
-                        
-                        <div class="conversation-content">
-                            <div class="conversation-header">
-                                <span class="conversation-name"><?php echo htmlspecialchars($conv['full_name']); ?></span>
-                                <span class="conversation-time"><?php echo date('M d H:i', strtotime($conv['last_message_time'])); ?></span>
-                            </div>
-                            <div class="conversation-message">
-                                <?php 
-                                    $is_sent = $conv['last_message'] && strpos($conv['last_message'], $_SESSION['user_id']) !== false;
-                                    echo ($conv['is_read'] === '0' ? '• ' : '') . htmlspecialchars(substr($conv['last_message'], 0, 60));
-                                ?>
-                            </div>
-                        </div>
-
-                        <?php if ($conv['unread_count'] > 0): ?>
-                            <div class="unread-indicator"></div>
-                        <?php endif; ?>
-                    </a>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <div class="no-conversations">
-                    <p>No messages yet. Start a conversation by messaging someone!</p>
-                </div>
-            <?php endif; ?>
-        </div>
-    </div>
-
-    <?php include __DIR__ . '/../includes/footer.php'; ?>
-</body>
-</html>
+    <?php else: ?>
+        <p class="muted" style="text-align: center; padding: 2rem;">No messages yet. Start a conversation by messaging someone!</p>
+    <?php endif; ?>
+</section>
+<?php require_once dirname(__DIR__) . '/includes/footer.php';
