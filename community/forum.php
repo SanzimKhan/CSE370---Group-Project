@@ -9,8 +9,8 @@ require_once __DIR__ . '/../includes/community.php';
 // Check authentication
 require_login();
 
-$conn = getConnection();
-$community = new Community($conn);
+$pdo = db();
+$community = new Community($pdo);
 
 // Handle new thread creation
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_thread'])) {
@@ -36,10 +36,9 @@ $threads = $community->getForumThreads($category, $limit, $offset);
 
 // Get user info for display
 $query = "SELECT full_name, avatar_path FROM User WHERE BRACU_ID = ?";
-$stmt = $conn->prepare($query);
-$stmt->bind_param('s', $_SESSION['user_id']);
-$stmt->execute();
-$user_info = $stmt->get_result()->fetch_assoc();
+$stmt = $pdo->prepare($query);
+$stmt->execute([$_SESSION['user_id']]);
+$user_info = $stmt->fetch(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>

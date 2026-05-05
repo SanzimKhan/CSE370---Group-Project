@@ -9,8 +9,8 @@ require_once __DIR__ . '/../includes/community.php';
 // Check authentication
 require_login();
 
-$conn = getConnection();
-$community = new Community($conn);
+$pdo = db();
+$community = new Community($pdo);
 
 $thread_id = (int) ($_GET['id'] ?? 0);
 
