@@ -61,6 +61,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
                 <tr>
                     <th>GID</th>
                     <th>Description</th>
+                    <th>Skills</th>
                     <th>Category</th>
                     <th>Deadline</th>
                     <th>Credit</th>
@@ -72,7 +73,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
             <tbody>
                 <?php if (!$gigs): ?>
                     <tr>
-                        <td colspan="8" class="muted">No gigs posted yet.</td>
+                        <td colspan="9" class="muted">No gigs posted yet.</td>
                     </tr>
                 <?php endif; ?>
 
@@ -80,6 +81,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
                     <tr>
                         <td>#<?= (int) $gig['GID'] ?></td>
                         <td><?= h($gig['LIST_OF_GIGS']) ?></td>
+                        <td><?= h((string) ($gig['skill_tags'] ?? 'Not specified')) ?></td>
                         <td><?= h($gig['CATAGORY']) ?></td>
                         <td><?= h($gig['DEADLINE']) ?></td>
                         <td><?= h(format_credit((float) $gig['CREDIT_AMOUNT'])) ?></td>

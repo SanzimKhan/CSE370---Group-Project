@@ -48,7 +48,7 @@ require_once __DIR__ . '/includes/header.php';
 <section class="card login-card">
     <div class="kicker">BRAC University</div>
     <h1>Create an Account</h1>
-    <p class="muted">Register using your BRACU ID to join the marketplace.</p>
+    <p class="muted">Register using your BRACU ID to join the marketplace. Every new account starts with ৳500 credits.</p>
 
     <?php if ($error): ?>
         <div class="flash flash-error"><?= h($error) ?></div>

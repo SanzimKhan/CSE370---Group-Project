@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/credits.php';
 
 $pageTitle = $pageTitle ?? APP_NAME;
 $activeUser = current_user();
@@ -28,6 +29,12 @@ $flash = get_flash();
             <nav class="nav-links">
                 <a href="<?= BASE_URL ?>dashboard.php">Dashboard</a>
                 <a href="<?= BASE_URL ?>profile.php">Profile</a>
+                <a href="<?= BASE_URL ?>public_profile.php?id=<?= urlencode($activeUser['BRACU_ID']) ?>" target="_blank">Public Profile</a>
+                
+                <!-- Credit Wallet -->
+                <a href="<?= BASE_URL ?>credits/topup.php" style="color: #28a745; font-weight: 600;">
+                    💰 ৳<?= number_format(get_user_credit_balance($activeUser['BRACU_ID']), 0) ?>
+                </a>
                 
                 <!-- Analytics -->
                 <?php if ($activeUser['preferred_mode'] === 'working'): ?>

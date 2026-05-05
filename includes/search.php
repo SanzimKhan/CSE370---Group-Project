@@ -111,8 +111,9 @@ class Search
             $params = [$min_credits, $max_credits];
 
             if ($keyword) {
-                $query .= " AND (g.LIST_OF_GIGS LIKE ? OR g.CATAGORY LIKE ?)";
+                $query .= " AND (g.LIST_OF_GIGS LIKE ? OR g.skill_tags LIKE ? OR g.CATAGORY LIKE ?)";
                 $keyword_search = "%$keyword%";
+                $params[] = $keyword_search;
                 $params[] = $keyword_search;
                 $params[] = $keyword_search;
             }
@@ -189,9 +190,9 @@ class Search
                                AVG(r.rating) as avg_rating
                          FROM User u
                          LEFT JOIN Ratings r ON u.BRACU_ID = r.ratee_id
-                         WHERE (u.full_name LIKE ? OR u.bio LIKE ?)";
+                     WHERE (u.full_name LIKE ? OR u.bio LIKE ? OR u.skills LIKE ?)";
 
-            $params = [$search_query, $search_query];
+            $params = [$search_query, $search_query, $search_query];
 
             if ($current_user) {
                 $query_str .= " AND u.BRACU_ID != ?";

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/credits.php';
 
 $user = require_login();
 $error = null;
@@ -13,6 +14,7 @@ if (is_post_request()) {
     $mobileNumber = trim($_POST['mobile_number'] ?? '');
     $addressLine = trim($_POST['address_line'] ?? '');
     $bio = trim($_POST['bio'] ?? '');
+    $skills = trim($_POST['skills'] ?? '');
     $preferredMode = normalize_user_mode(trim($_POST['preferred_mode'] ?? 'hiring'));
 
     if ($fullName === '' || strlen($fullName) < 2) {
@@ -25,6 +27,8 @@ if (is_post_request()) {
         $error = 'Address is too long (max 255 characters).';
     } elseif (strlen($bio) > 1000) {
         $error = 'Bio is too long (max 1000 characters).';
+    } elseif (strlen($skills) > 1000) {
+        $error = 'Skills are too long (max 1000 characters).';
     }
 
     $avatarPath = $user['avatar_path'] ?? null;
@@ -89,6 +93,7 @@ if (is_post_request()) {
                  mobile_number = :mobile_number,
                  address_line = :address_line,
                  bio = :bio,
+                 skills = :skills,
                  avatar_path = :avatar_path,
                  preferred_mode = :preferred_mode
              WHERE BRACU_ID = :id'
@@ -99,6 +104,7 @@ if (is_post_request()) {
             'mobile_number' => $mobileNumber,
             'address_line' => $addressLine !== '' ? $addressLine : null,
             'bio' => $bio !== '' ? $bio : null,
+            'skills' => $skills !== '' ? $skills : null,
             'avatar_path' => $avatarPath,
             'preferred_mode' => $preferredMode,
             'id' => $user['BRACU_ID'],
@@ -114,6 +120,7 @@ $user = require_login();
 $fullNameValue = (string) ($user['full_name'] ?? '');
 $addressValue = (string) ($user['address_line'] ?? '');
 $bioValue = (string) ($user['bio'] ?? '');
+$skillsValue = (string) ($user['skills'] ?? '');
 $avatarSrc = (string) ($user['avatar_path'] ?? '');
 $preferredModeValue = normalize_user_mode((string) ($user['preferred_mode'] ?? active_user_mode($user)));
 
@@ -143,8 +150,24 @@ require_once __DIR__ . '/includes/header.php';
             <p class="muted"><?= h($user['Bracu_mail']) ?></p>
             <p class="muted">Phone: <?= h($user['mobile_number']) ?></p>
             <p class="muted">Address: <?= h($addressValue !== '' ? $addressValue : 'Not set') ?></p>
+            <p class="muted">Skills: <?= h($skillsValue !== '' ? $skillsValue : 'Not set') ?></p>
             <p class="muted">Mode: <?= h($preferredModeValue === 'hiring' ? 'Hiring (Post jobs)' : 'Working (Apply to jobs)') ?></p>
-            <p class="muted">Wallet: <?= h(format_credit((float) $user['credit_balance'])) ?></p>
+            <p class="muted">Wallet: <strong style="color: #28a745;">৳<?= number_format((float) $user['credit_balance'], 2) ?></strong></p>
+            <p style="margin-top: 0.75rem;">
+                <a class="btn btn-ghost" href="public_profile.php?id=<?= urlencode($user['BRACU_ID']) ?>" target="_blank">Public Career Profile</a>
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>💰 Credit Wallet</h2>
+            <div style="margin-bottom: 1rem;">
+                <p class="muted">Current Balance</p>
+                <p style="font-size: 1.8em; font-weight: bold; color: #28a745;">৳<?= number_format(get_user_credit_balance($user['BRACU_ID']), 2) ?></p>
+            </div>
+            <p>
+                <a class="btn btn-primary" href="credits/topup.php" style="width: 100%; text-align: center; margin-bottom: 0.5rem;">➕ Add Credits</a>
+                <a class="btn btn-ghost" href="credits/history.php" style="width: 100%; text-align: center;">📊 View History</a>
+            </p>
         </div>
 
         <div class="card">
@@ -166,6 +189,10 @@ require_once __DIR__ . '/includes/header.php';
                 <div class="form-row">
                     <label for="bio">About You</label>
                     <textarea id="bio" name="bio" maxlength="1000" placeholder="Write a short professional bio..."><?= h($bioValue) ?></textarea>
+                </div>
+                <div class="form-row">
+                    <label for="skills">Skills</label>
+                    <textarea id="skills" name="skills" maxlength="1000" placeholder="Example: React, Node.js, UI/UX, Data Analysis"><?= h($skillsValue) ?></textarea>
                 </div>
                 <div class="form-row">
                     <label for="preferred_mode">Default Login Mode</label>

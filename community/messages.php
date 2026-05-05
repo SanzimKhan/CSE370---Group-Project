@@ -44,7 +44,7 @@ if ($gig_context > 0) {
 
 // Handle message sending
 if (is_post_request()) {
-    enforce_csrf_or_fail('community/messages.php?user=' . urlencode($contact_id));
+    enforce_csrf_or_fail('messages.php?user=' . urlencode($contact_id));
 
     $message_text = trim($_POST['message_text'] ?? '');
     $gig_id = (int) ($_POST['gig_id'] ?? 0);
@@ -55,7 +55,7 @@ if (is_post_request()) {
         // Mark messages as read
         $community->markMessagesAsRead($contact_id, $user['BRACU_ID']);
 
-        redirect('community/messages.php?user=' . urlencode($contact_id));
+        redirect('messages.php?user=' . urlencode($contact_id));
     }
 }
 

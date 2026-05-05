@@ -228,7 +228,7 @@ function register_user(string $bracuId, string $email, string $plainPassword, st
             'freelancer' => 1,
             'preferred_mode' => $preferredMode,
             'is_admin' => 0,
-            'credit_balance' => '0.00',
+            'credit_balance' => '500.00',
         ]);
     } catch (PDOException $e) {
         // On constraint violation or other DB error, fail gracefully

@@ -9,12 +9,13 @@ CREATE TABLE IF NOT EXISTS `User` (
     mobile_number VARCHAR(20) NOT NULL,
     address_line VARCHAR(255) NULL,
     bio TEXT NULL,
+    skills TEXT NULL,
     avatar_path VARCHAR(255) NULL,
     password VARCHAR(255) NOT NULL,
     freelancer TINYINT(1) NOT NULL DEFAULT 1,
     preferred_mode ENUM('hiring', 'working') NOT NULL DEFAULT 'hiring',
     is_admin TINYINT(1) NOT NULL DEFAULT 0,
-    credit_balance DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    credit_balance DECIMAL(10,2) NOT NULL DEFAULT 500.00,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -23,6 +24,7 @@ CREATE TABLE IF NOT EXISTS `Gigs` (
     BRACU_ID VARCHAR(20) NOT NULL,
     CREDIT_AMOUNT DECIMAL(10,2) NOT NULL,
     LIST_OF_GIGS TEXT NOT NULL,
+    skill_tags VARCHAR(255) NULL,
     CATAGORY ENUM('IT', 'Writing', 'Others') NOT NULL,
     DEADLINE DATE NOT NULL,
     STATUS ENUM('listed', 'pending', 'done') NOT NULL DEFAULT 'listed',

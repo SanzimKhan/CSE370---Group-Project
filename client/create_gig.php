@@ -13,6 +13,7 @@ if (is_post_request()) {
     $deadline = trim($_POST['deadline'] ?? '');
     $creditAmount = (float) ($_POST['credit_amount'] ?? 0);
     $category = trim($_POST['category'] ?? '');
+    $skillTags = trim($_POST['skill_tags'] ?? '');
 
     $validCategories = ['IT', 'Writing', 'Others'];
 
@@ -20,6 +21,8 @@ if (is_post_request()) {
         $error = 'Please provide a meaningful gig description (minimum 15 characters).';
     } elseif (strlen($description) > 2000) {
         $error = 'Description is too long. Keep it under 2000 characters.';
+    } elseif ($skillTags !== '' && strlen($skillTags) > 255) {
+        $error = 'Skill tags are too long. Keep it under 255 characters.';
     } elseif (!in_array($category, $validCategories, true)) {
         $error = 'Please choose a valid gig category.';
     } elseif ($creditAmount <= 0) {
@@ -32,14 +35,15 @@ if (is_post_request()) {
         $error = 'Deadline cannot be in the past.';
     } else {
         $statement = db()->prepare(
-            'INSERT INTO `Gigs` (BRACU_ID, CREDIT_AMOUNT, LIST_OF_GIGS, CATAGORY, DEADLINE, STATUS)
-             VALUES (:bracu_id, :credit_amount, :description, :category, :deadline, :status)'
+              'INSERT INTO `Gigs` (BRACU_ID, CREDIT_AMOUNT, LIST_OF_GIGS, skill_tags, CATAGORY, DEADLINE, STATUS)
+               VALUES (:bracu_id, :credit_amount, :description, :skill_tags, :category, :deadline, :status)'
         );
 
         $statement->execute([
             'bracu_id' => $user['BRACU_ID'],
             'credit_amount' => $creditAmount,
             'description' => $description,
+            'skill_tags' => $skillTags !== '' ? $skillTags : null,
             'category' => $category,
             'deadline' => $deadline,
             'status' => 'listed',
@@ -67,6 +71,11 @@ require_once dirname(__DIR__) . '/includes/header.php';
         <div class="form-row">
             <label for="description">Description</label>
             <textarea id="description" name="description" maxlength="2000" placeholder="Explain what you need done..." required><?= h($_POST['description'] ?? '') ?></textarea>
+        </div>
+
+        <div class="form-row">
+            <label for="skill_tags">Required Skills</label>
+            <input type="text" id="skill_tags" name="skill_tags" maxlength="255" value="<?= h($_POST['skill_tags'] ?? '') ?>" placeholder="e.g., React, SQL, UI Design">
         </div>
 
         <div class="grid cols-2">

@@ -47,7 +47,8 @@ $stmt->execute();
 $completed_gigs = $stmt->get_result()->fetch_assoc()['count'];
 
 // Handle message button
-$can_message = $_SESSION['user_id'] !== $profile_user_id;
+$viewerId = (string) ($_SESSION['user_bracu_id'] ?? '');
+$can_message = $viewerId !== '' && $viewerId !== $profile_user_id;
 ?>
 
 <!DOCTYPE html>

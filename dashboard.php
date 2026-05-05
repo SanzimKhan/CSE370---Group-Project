@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/credits.php';
 
 $user = require_login();
 
@@ -40,6 +41,10 @@ $availableStatement->execute([
 ]);
 $availableCount = (int) $availableStatement->fetchColumn();
 
+// Get credit information
+$creditBalance = get_user_credit_balance($user['BRACU_ID']);
+$creditSummary = get_credit_summary($user['BRACU_ID']);
+
 $mode = active_user_mode($user);
 
 $pageTitle = 'Dashboard';
@@ -50,6 +55,31 @@ require_once __DIR__ . '/includes/header.php';
     <h1>Hello, <?= h($user['BRACU_ID']) ?></h1>
     <p class="muted">Use the same account as a client and as a freelancer. Your e-wallet updates automatically after a gig is completed.</p>
     <p class="muted">Current login mode: <strong><?= h($mode === 'hiring' ? 'Hiring (Post jobs)' : 'Working (Apply to jobs)') ?></strong></p>
+</section>
+
+<!-- Credit Management Section -->
+<section class="card">
+    <div class="kicker">💰 Credit Wallet</div>
+    <h2>Your Credits</h2>
+    <div class="stats">
+        <div class="stat">
+            <div class="label">Available Balance</div>
+            <div class="value" style="font-size: 2.5em; color: #28a745;">৳<?= number_format($creditBalance, 2) ?></div>
+        </div>
+        <div class="stat">
+            <div class="label">Total Earned</div>
+            <div class="value" style="color: #007bff;">৳<?= number_format($creditSummary['total_earned'], 2) ?></div>
+        </div>
+        <div class="stat">
+            <div class="label">Total Spent</div>
+            <div class="value" style="color: #dc3545;">৳<?= number_format($creditSummary['total_spent'], 2) ?></div>
+        </div>
+    </div>
+    <p style="margin-top: 1rem;">
+        <a class="btn btn-primary" href="credits/topup.php">➕ Top Up Credits</a>
+        <a class="btn btn-ghost" href="credits/history.php">📊 View History</a>
+        <a class="btn btn-ghost" href="profile.php">👤 Wallet Details</a>
+    </p>
 </section>
 
 <section class="grid cols-2">

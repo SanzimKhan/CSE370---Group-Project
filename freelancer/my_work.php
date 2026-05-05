@@ -6,7 +6,7 @@ require_once dirname(__DIR__) . '/includes/auth.php';
 $user = require_login();
 
 $statement = db()->prepare(
-    'SELECT g.GID, g.LIST_OF_GIGS, g.CATAGORY, g.CREDIT_AMOUNT, g.STATUS, g.DEADLINE,
+    'SELECT g.GID, g.LIST_OF_GIGS, g.skill_tags, g.CATAGORY, g.CREDIT_AMOUNT, g.STATUS, g.DEADLINE,
             g.BRACU_ID AS client_id, w.payment_released, w.accepted_at, w.done_at
      FROM `Working_on` w
      JOIN `Gigs` g ON g.GID = w.GID
@@ -30,6 +30,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
                 <tr>
                     <th>GID</th>
                     <th>Description</th>
+                    <th>Skills</th>
                     <th>Client</th>
                     <th>Category</th>
                     <th>Credit</th>
@@ -40,7 +41,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
             <tbody>
                 <?php if (!$works): ?>
                     <tr>
-                        <td colspan="7" class="muted">You have not accepted any gigs yet.</td>
+                        <td colspan="8" class="muted">You have not accepted any gigs yet.</td>
                     </tr>
                 <?php endif; ?>
 
@@ -48,6 +49,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
                     <tr>
                         <td>#<?= (int) $work['GID'] ?></td>
                         <td><?= h($work['LIST_OF_GIGS']) ?></td>
+                        <td><?= h((string) ($work['skill_tags'] ?? 'Not specified')) ?></td>
                         <td><?= h($work['client_id']) ?></td>
                         <td><?= h($work['CATAGORY']) ?></td>
                         <td><?= h(format_credit((float) $work['CREDIT_AMOUNT'])) ?></td>
