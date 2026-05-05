@@ -184,3 +184,62 @@ function reset_login_failures(): void
 {
     unset($_SESSION['login_throttle']);
 }
+
+/**
+ * Register a new user in the database.
+ * Returns the created user array (without password) on success, or null on failure.
+ */
+function register_user(string $bracuId, string $email, string $plainPassword, string $fullName = '', string $mobileNumber = '', string $preferredMode = 'hiring'): ?array
+{
+    $bracuId = normalize_bracu_id($bracuId);
+    if ($bracuId === '' || !is_valid_bracu_id($bracuId)) {
+        return null;
+    }
+
+    $email = trim($email);
+    if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return null;
+    }
+
+    $preferredMode = normalize_user_mode($preferredMode);
+
+    // Ensure BRACU ID or email are not already taken
+    $existing = db()->prepare('SELECT BRACU_ID FROM `User` WHERE BRACU_ID = :id OR Bracu_mail = :mail LIMIT 1');
+    $existing->execute(['id' => $bracuId, 'mail' => $email]);
+    if ($existing->fetch()) {
+        return null;
+    }
+
+    $passwordHash = password_hash($plainPassword, PASSWORD_BCRYPT);
+
+    $insert = db()->prepare(
+        'INSERT INTO `User` (BRACU_ID, Bracu_mail, full_name, client, mobile_number, password, freelancer, preferred_mode, is_admin, credit_balance)
+         VALUES (:bracu_id, :email, :full_name, :client, :mobile_number, :password, :freelancer, :preferred_mode, :is_admin, :credit_balance)'
+    );
+
+    try {
+        $insert->execute([
+            'bracu_id' => $bracuId,
+            'email' => $email,
+            'full_name' => $fullName,
+            'client' => 1,
+            'mobile_number' => $mobileNumber,
+            'password' => $passwordHash,
+            'freelancer' => 1,
+            'preferred_mode' => $preferredMode,
+            'is_admin' => 0,
+            'credit_balance' => '0.00',
+        ]);
+    } catch (PDOException $e) {
+        // On constraint violation or other DB error, fail gracefully
+        error_log('User registration failed: ' . $e->getMessage());
+        return null;
+    }
+
+    $user = find_user_by_bracu_id($bracuId);
+    if ($user) {
+        unset($user['password']);
+    }
+
+    return $user ?: null;
+}
