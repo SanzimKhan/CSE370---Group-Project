@@ -6,13 +6,13 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/community.php';
 
-// Check authentication
+
 require_login();
 
 $conn = getConnection();
 $community = new Community($conn);
 
-// Get profile user ID from query string
+
 $profile_user_id = $_GET['id'] ?? null;
 
 if (!$profile_user_id) {
@@ -20,7 +20,7 @@ if (!$profile_user_id) {
     exit;
 }
 
-// Get user info
+
 $query = "SELECT * FROM User WHERE BRACU_ID = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param('s', $profile_user_id);
@@ -32,21 +32,21 @@ if (!$user_profile) {
     exit;
 }
 
-// Get ratings
+
 $ratings = $community->getUserRatings($profile_user_id);
 $rating_stats = $community->getUserRatingAverage($profile_user_id);
 
-// Get badges
+
 $badges = $community->getUserBadges($profile_user_id);
 
-// Get gigs count
+
 $query = "SELECT COUNT(*) as count FROM Gigs WHERE BRACU_ID = ? AND STATUS = 'done'";
 $stmt = $conn->prepare($query);
 $stmt->bind_param('s', $profile_user_id);
 $stmt->execute();
 $completed_gigs = $stmt->get_result()->fetch_assoc()['count'];
 
-// Handle message button
+
 $viewerId = (string) ($_SESSION['user_bracu_id'] ?? '');
 $can_message = $viewerId !== '' && $viewerId !== $profile_user_id;
 ?>

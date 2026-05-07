@@ -1,7 +1,7 @@
 <?php
-/**
- * Check database users and their credits
- */
+
+
+
 
 declare(strict_types=1);
 
@@ -23,7 +23,7 @@ foreach ($users as $user) {
     echo "Balance: ৳" . number_format((float)$user['credit_balance'], 2) . "\n\n";
 }
 
-// Check credit tables
+
 echo "\n\nCredit System Tables Status\n";
 echo "===========================\n\n";
 
@@ -35,7 +35,7 @@ foreach ($tables as $table) {
     echo "$table: $count records\n";
 }
 
-// Check if first user has history
+
 if (!empty($users)) {
     $firstUser = $users[0]['BRACU_ID'];
     echo "\n\nHistory for user $firstUser:\n";

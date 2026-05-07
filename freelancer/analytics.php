@@ -6,19 +6,19 @@ require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/analytics.php';
 
-// Check authentication
+
 if (!isset($_SESSION['user_bracu_id'])) {
     header('Location: ../index.php');
     exit;
 }
 
-// Check if user has working mode
+
 $pdo = db();
 $stmt = $pdo->prepare("SELECT preferred_mode FROM User WHERE BRACU_ID = ?");
 $stmt->execute([$_SESSION['user_bracu_id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Allow access if user exists AND (preferred_mode is 'working' OR mode=working is in URL)
+
 if (!$user || ($user['preferred_mode'] !== 'working' && (!isset($_GET['mode']) || $_GET['mode'] !== 'working'))) {
     header('Location: ../index.php');
     exit;
@@ -26,10 +26,10 @@ if (!$user || ($user['preferred_mode'] !== 'working' && (!isset($_GET['mode']) |
 
 $analytics = new Analytics($pdo);
 
-// Get user analytics
+
 $user_analytics = $analytics->getUserAnalytics($_SESSION['user_bracu_id']);
 
-// Get gig-specific analytics
+
 $gig_analytics = [];
 $query = "SELECT GID FROM Gigs WHERE BRACU_ID = ? LIMIT 10";
 $stmt = $pdo->prepare($query);

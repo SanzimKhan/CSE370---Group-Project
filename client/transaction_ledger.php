@@ -5,7 +5,7 @@ require_once '../includes/db.php';
 require_once '../includes/auth.php';
 require_once '../includes/virtual_economy.php';
 
-// Check authentication
+
 if (!isLoggedIn()) {
     header('Location: ../index.php');
     exit;
@@ -14,15 +14,15 @@ if (!isLoggedIn()) {
 $userId = $_SESSION['bracu_id'];
 $economy = new VirtualEconomy($pdo);
 
-// Get pagination parameters
+
 $page = max(1, (int)($_GET['page'] ?? 1));
 $perPage = 20;
 $offset = ($page - 1) * $perPage;
 
-// Get transaction ledger
+
 $transactions = $economy->getTransactionLedger($userId, $perPage, $offset);
 
-// Get total count
+
 $stmt = $pdo->prepare("
     SELECT COUNT(*) as total FROM Transaction_Ledger
     WHERE from_user = ? OR to_user = ?
@@ -32,7 +32,7 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
 $totalTransactions = $result['total'];
 $totalPages = max(1, ceil($totalTransactions / $perPage));
 
-// Get user info
+
 $stmt = $pdo->prepare("SELECT credit_balance FROM User WHERE BRACU_ID = ?");
 $stmt->execute([$userId]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);

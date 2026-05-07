@@ -1,8 +1,8 @@
 <?php
-/**
- * Password Hash Generator
- * Simple utility to generate bcrypt hashes for test passwords
- */
+
+
+
+
 
 declare(strict_types=1);
 

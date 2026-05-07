@@ -5,7 +5,7 @@ require_once '../includes/db.php';
 require_once '../includes/auth.php';
 require_once '../includes/virtual_economy.php';
 
-// Check authentication
+
 if (!isLoggedIn()) {
     header('Location: ../index.php');
     exit;
@@ -14,7 +14,7 @@ if (!isLoggedIn()) {
 $userId = $_SESSION['bracu_id'];
 $economy = new VirtualEconomy($pdo);
 
-// Handle new dispute creation
+
 $message = '';
 $messageType = '';
 
@@ -50,13 +50,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-// Get user disputes
+
 $page = max(1, (int)($_GET['page'] ?? 1));
 $perPage = 10;
 $offset = ($page - 1) * $perPage;
 $disputes = $economy->getUserDisputes($userId, $perPage, $offset);
 
-// Get total disputes count
+
 $stmt = $pdo->prepare("
     SELECT COUNT(*) as total FROM Transaction_Disputes
     WHERE complainant_id = ? OR respondent_id = ?
@@ -66,7 +66,7 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
 $totalDisputes = $result['total'];
 $totalPages = max(1, ceil($totalDisputes / $perPage));
 
-// Check if admin for admin panel link
+
 $stmt = $pdo->prepare("SELECT is_admin FROM User WHERE BRACU_ID = ?");
 $stmt->execute([$userId]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);

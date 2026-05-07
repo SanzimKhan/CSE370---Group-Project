@@ -185,10 +185,10 @@ function reset_login_failures(): void
     unset($_SESSION['login_throttle']);
 }
 
-/**
- * Register a new user in the database.
- * Returns the created user array (without password) on success, or null on failure.
- */
+
+
+
+
 function register_user(string $bracuId, string $email, string $plainPassword, string $fullName = '', string $mobileNumber = '', string $preferredMode = 'hiring'): ?array
 {
     $bracuId = normalize_bracu_id($bracuId);
@@ -203,7 +203,7 @@ function register_user(string $bracuId, string $email, string $plainPassword, st
 
     $preferredMode = normalize_user_mode($preferredMode);
 
-    // Ensure BRACU ID or email are not already taken
+    
     $existing = db()->prepare('SELECT BRACU_ID FROM `User` WHERE BRACU_ID = :id OR Bracu_mail = :mail LIMIT 1');
     $existing->execute(['id' => $bracuId, 'mail' => $email]);
     if ($existing->fetch()) {
@@ -231,7 +231,7 @@ function register_user(string $bracuId, string $email, string $plainPassword, st
             'credit_balance' => '500.00',
         ]);
     } catch (PDOException $e) {
-        // On constraint violation or other DB error, fail gracefully
+        
         error_log('User registration failed: ' . $e->getMessage());
         return null;
     }

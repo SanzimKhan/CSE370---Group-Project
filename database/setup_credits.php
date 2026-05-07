@@ -1,7 +1,7 @@
 <?php
-/**
- * Check User table structure and create credit tables
- */
+
+
+
 
 declare(strict_types=1);
 
@@ -16,7 +16,7 @@ try {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ]);
 
-    // Check User table structure
+    
     $stmt = $pdo->query("DESCRIBE User");
     $columns = $stmt->fetchAll();
     echo "User table columns:\n";
@@ -26,7 +26,7 @@ try {
         }
     }
 
-    // Create tables without foreign keys first
+    
     $tables = [
         "CREATE TABLE IF NOT EXISTS `Credit_Topup` (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -114,7 +114,7 @@ try {
         }
     }
 
-    // Initialize data
+    
     try {
         $pdo->exec("
             INSERT IGNORE INTO `Credit_Limit` (BRACU_ID, daily_limit, monthly_limit)
@@ -125,7 +125,7 @@ try {
         echo "Note: " . $e->getMessage() . "\n";
     }
 
-    // Verify
+    
     $stmt = $pdo->query("SHOW TABLES LIKE 'Credit_%'");
     $created_tables = $stmt->fetchAll(PDO::FETCH_COLUMN);
     echo "\n✅ Created tables: " . implode(', ', $created_tables) . "\n";

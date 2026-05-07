@@ -10,9 +10,9 @@ class Community
         $this->pdo = $pdo;
     }
 
-    /**
-     * Create a rating/review
-     */
+    
+
+
     public function createRating(
         string $rater_id,
         string $ratee_id,
@@ -38,9 +38,9 @@ class Community
         }
     }
 
-    /**
-     * Get user ratings/reviews
-     */
+    
+
+
     public function getUserRatings(string $bracu_id): array
     {
         try {
@@ -58,9 +58,9 @@ class Community
         }
     }
 
-    /**
-     * Get user rating average
-     */
+    
+
+
     public function getUserRatingAverage(string $bracu_id): ?array
     {
         try {
@@ -83,9 +83,9 @@ class Community
         }
     }
 
-    /**
-     * Send a message
-     */
+    
+
+
     public function sendMessage(
         string $sender_id,
         string $recipient_id,
@@ -104,9 +104,9 @@ class Community
         }
     }
 
-    /**
-     * Get messages between two users
-     */
+    
+
+
     public function getConversation(string $user1_id, string $user2_id, int $limit = 50, int $offset = 0): array
     {
         try {
@@ -125,9 +125,9 @@ class Community
         }
     }
 
-    /**
-     * Get user's message conversations
-     */
+    
+
+
     public function getUserConversations(string $bracu_id): array
     {
         try {
@@ -157,9 +157,9 @@ class Community
         }
     }
 
-    /**
-     * Mark messages as read
-     */
+    
+
+
     public function markMessagesAsRead(string $recipient_id, string $sender_id): bool
     {
         try {
@@ -175,9 +175,9 @@ class Community
         }
     }
 
-    /**
-     * Get unread message count
-     */
+    
+
+
     public function getUnreadMessageCount(string $bracu_id): int
     {
         try {
@@ -193,9 +193,9 @@ class Community
         }
     }
 
-    /**
-     * Create forum thread
-     */
+    
+
+
     public function createForumThread(
         string $creator_id,
         string $title,
@@ -217,9 +217,9 @@ class Community
         }
     }
 
-    /**
-     * Get forum threads
-     */
+    
+
+
     public function getForumThreads(string $category = '', int $limit = 20, int $offset = 0): array
     {
         try {
@@ -248,9 +248,9 @@ class Community
         }
     }
 
-    /**
-     * Get forum thread with replies
-     */
+    
+
+
     public function getForumThreadWithReplies(int $thread_id): array
     {
         try {
@@ -266,12 +266,12 @@ class Community
                 return [];
             }
 
-            // Update view count
+            
             $update_query = "UPDATE Forum_Threads SET view_count = view_count + 1 WHERE id = ?";
             $update_stmt = $this->pdo->prepare($update_query);
             $update_stmt->execute([$thread_id]);
 
-            // Get replies
+            
             $replies_query = "SELECT fr.*, u.full_name, u.avatar_path FROM Forum_Replies fr
                              JOIN User u ON fr.author_id = u.BRACU_ID
                              WHERE fr.thread_id = ?
@@ -291,9 +291,9 @@ class Community
         }
     }
 
-    /**
-     * Add reply to forum thread
-     */
+    
+
+
     public function addForumReply(int $thread_id, string $author_id, string $reply_text): bool
     {
         try {
@@ -302,7 +302,7 @@ class Community
 
             $stmt = $this->pdo->prepare($query);
             if ($stmt->execute([$thread_id, $author_id, $reply_text])) {
-                // Update reply count
+                
                 $update_query = "UPDATE Forum_Threads SET reply_count = reply_count + 1, updated_at = NOW()
                                WHERE id = ?";
                 $update_stmt = $this->pdo->prepare($update_query);
@@ -316,9 +316,9 @@ class Community
         }
     }
 
-    /**
-     * Award badge to user
-     */
+    
+
+
     public function awardBadge(string $bracu_id, string $badge_type, string $badge_name, ?string $description = null): bool
     {
         try {
@@ -334,9 +334,9 @@ class Community
         }
     }
 
-    /**
-     * Get user badges
-     */
+    
+
+
     public function getUserBadges(string $bracu_id): array
     {
         try {
@@ -351,28 +351,28 @@ class Community
         }
     }
 
-    /**
-     * Check and award achievement badges
-     */
+    
+
+
     public function checkAndAwardBadges(string $bracu_id): void
     {
         try {
-            // Get user stats
+            
             $ratings = $this->getUserRatingAverage($bracu_id);
             $earnings = $this->getUserEarnings($bracu_id);
 
-            // Top Rated Badge (avg rating >= 4.5)
+            
             if ($ratings && isset($ratings['avg_rating']) && $ratings['avg_rating'] >= 4.5 && $ratings['total_ratings'] >= 5) {
                 $this->awardBadge($bracu_id, 'top_rated', 'Top Rated', 'Earned with an average rating of 4.5+ stars');
             }
 
-            // Trusted Badge (5+ completed jobs)
+            
             $completed_jobs = $this->getCompletedJobsCount($bracu_id);
             if ($completed_jobs >= 5) {
                 $this->awardBadge($bracu_id, 'trusted', 'Trusted', 'Completed 5 or more jobs');
             }
 
-            // Responsive Badge (fast response time)
+            
             if ($this->isResponsive($bracu_id)) {
                 $this->awardBadge($bracu_id, 'responsive', 'Responsive', 'Consistently responds quickly to messages');
             }
@@ -381,9 +381,9 @@ class Community
         }
     }
 
-    /**
-     * Helper: Get user earnings
-     */
+    
+
+
     private function getUserEarnings(string $bracu_id): float
     {
         try {
@@ -397,9 +397,9 @@ class Community
         }
     }
 
-    /**
-     * Helper: Get completed jobs count
-     */
+    
+
+
     private function getCompletedJobsCount(string $bracu_id): int
     {
         try {
@@ -413,9 +413,9 @@ class Community
         }
     }
 
-    /**
-     * Helper: Check if user is responsive
-     */
+    
+
+
     private function isResponsive(string $bracu_id): bool
     {
         try {
@@ -428,7 +428,7 @@ class Community
             $stmt->execute([$bracu_id]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // If average response time is less than 24 hours (86400 seconds)
+            
             return $result && isset($result['avg_response_time']) && $result['avg_response_time'] && $result['avg_response_time'] < 86400;
         } catch (PDOException $e) {
             error_log("Check responsive error: " . $e->getMessage());

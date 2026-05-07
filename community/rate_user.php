@@ -6,13 +6,13 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/community.php';
 
-// Check authentication
+
 require_login();
 
 $conn = getConnection();
 $community = new Community($conn);
 
-// Get user to rate
+
 $rate_user_id = $_GET['user'] ?? null;
 $gig_id = (int) ($_GET['gig'] ?? 0);
 
@@ -21,7 +21,7 @@ if (!$rate_user_id) {
     exit;
 }
 
-// Verify user exists
+
 $query = "SELECT full_name FROM User WHERE BRACU_ID = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param('s', $rate_user_id);
@@ -33,7 +33,7 @@ if (!$rate_user) {
     exit;
 }
 
-// Get gig details if provided
+
 $gig_info = null;
 if ($gig_id > 0) {
     $query = "SELECT GID, LIST_OF_GIGS, CREDIT_AMOUNT FROM Gigs WHERE GID = ?";
@@ -43,7 +43,7 @@ if ($gig_id > 0) {
     $gig_info = $stmt->get_result()->fetch_assoc();
 }
 
-// Handle rating submission
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rating'])) {
     $rating = (int) ($_POST['rating'] ?? 0);
     $review = trim($_POST['review'] ?? '');
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rating'])) {
             $is_client
         );
 
-        // Check and award badges
+        
         $community->checkAndAwardBadges($rate_user_id);
 
         header('Location: profile.php?id=' . urlencode($rate_user_id) . '&rated=1');

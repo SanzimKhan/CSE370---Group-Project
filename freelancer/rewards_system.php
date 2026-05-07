@@ -5,7 +5,7 @@ require_once '../includes/db.php';
 require_once '../includes/auth.php';
 require_once '../includes/virtual_economy.php';
 
-// Check authentication
+
 if (!isLoggedIn()) {
     header('Location: ../index.php');
     exit;
@@ -14,7 +14,7 @@ if (!isLoggedIn()) {
 $userId = $_SESSION['bracu_id'];
 $economy = new VirtualEconomy($pdo);
 
-// Handle point redemption
+
 $message = '';
 $messageType = '';
 
@@ -40,16 +40,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-// Get user points
+
 $userPoints = $economy->getUserPoints($userId);
 
-// Get points activity
+
 $page = max(1, (int)($_GET['page'] ?? 1));
 $perPage = 15;
 $offset = ($page - 1) * $perPage;
 $activity = $economy->getPointsActivity($userId, $perPage, $offset);
 
-// Get total activity count
+
 $stmt = $pdo->prepare("SELECT COUNT(*) as total FROM Points_Activity WHERE BRACU_ID = ?");
 $stmt->execute([$userId]);
 $result = $stmt->fetch(PDO::FETCH_ASSOC);

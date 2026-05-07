@@ -6,14 +6,14 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/community.php';
 
-// Check authentication
+
 $currentUser = require_login();
 $creatorId = (string) ($currentUser['BRACU_ID'] ?? '');
 
 $pdo = db();
 $community = new Community($pdo);
 
-// Handle new thread creation
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_thread'])) {
     $title = trim($_POST['title'] ?? '');
     $description = trim($_POST['description'] ?? '');
@@ -26,16 +26,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_thread'])) {
     }
 }
 
-// Get category filter
+
 $category = $_GET['category'] ?? '';
 $page = (int) ($_GET['page'] ?? 1);
 $limit = 10;
 $offset = ($page - 1) * $limit;
 
-// Get threads
+
 $threads = $community->getForumThreads($category, $limit, $offset);
 
-// Get user info for display
+
 $query = "SELECT full_name, avatar_path FROM User WHERE BRACU_ID = ?";
 $stmt = $pdo->prepare($query);
 $stmt->execute([$creatorId]);

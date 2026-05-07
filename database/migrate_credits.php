@@ -1,7 +1,7 @@
 <?php
-/**
- * Credit Management System - Step by Step Migration
- */
+
+
+
 
 declare(strict_types=1);
 
@@ -17,7 +17,7 @@ try {
     ]);
 
     $createStatements = [
-        // Credit_Topup table
+        
         "CREATE TABLE IF NOT EXISTS `Credit_Topup` (
             id INT AUTO_INCREMENT PRIMARY KEY,
             topup_id VARCHAR(50) NOT NULL UNIQUE,
@@ -41,7 +41,7 @@ try {
             INDEX idx_topup_reference (transaction_reference)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
 
-        // Credit_History table
+        
         "CREATE TABLE IF NOT EXISTS `Credit_History` (
             id INT AUTO_INCREMENT PRIMARY KEY,
             history_id VARCHAR(50) NOT NULL UNIQUE,
@@ -65,7 +65,7 @@ try {
             INDEX idx_history_gig (gig_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
 
-        // Credit_Bonus table
+        
         "CREATE TABLE IF NOT EXISTS `Credit_Bonus` (
             id INT AUTO_INCREMENT PRIMARY KEY,
             bonus_id VARCHAR(50) NOT NULL UNIQUE,
@@ -86,7 +86,7 @@ try {
             INDEX idx_bonus_redeemed (is_redeemed)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
 
-        // Credit_Limit table
+        
         "CREATE TABLE IF NOT EXISTS `Credit_Limit` (
             id INT AUTO_INCREMENT PRIMARY KEY,
             BRACU_ID VARCHAR(20) NOT NULL UNIQUE,
@@ -116,7 +116,7 @@ try {
         }
     }
 
-    // Initialize credit limits for users
+    
     try {
         $pdo->exec("
             INSERT INTO `Credit_Limit` (BRACU_ID, daily_limit, monthly_limit)
@@ -129,7 +129,7 @@ try {
         echo "⚠ Could not initialize limits: " . $e->getMessage() . "\n";
     }
 
-    // Give signup bonus to existing users
+    
     try {
         $pdo->exec("
             INSERT IGNORE INTO `Credit_Bonus` (bonus_id, BRACU_ID, bonus_amount, bonus_type, reason, granted_by)

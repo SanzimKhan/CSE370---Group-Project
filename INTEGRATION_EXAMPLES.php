@@ -1,10 +1,10 @@
 <?php
-/**
- * VIRTUAL ECONOMY - DEVELOPER INTEGRATION GUIDE
- *
- * Copy and paste code snippets from this file to integrate virtual economy
- * features into your existing pages.
- */
+
+
+
+
+
+
 ?>
 
 <!--
@@ -14,23 +14,23 @@
 -->
 
 <?php
-/**
- * 1. INITIALIZE VIRTUAL ECONOMY CLASS
- *
- * Add this to any page that needs to use the virtual economy
- */
+
+
+
+
+
 ?>
 require_once '../includes/virtual_economy.php';
 $economy = new VirtualEconomy($pdo);
 
 
 <?php
-/**
- * 2. AWARD POINTS WHEN GIG IS COMPLETED
- *
- * Add this to client/my_gigs.php when a gig is marked as done
- * This should be after the gig status is updated to 'done'
- */
+
+
+
+
+
+
 ?>
 // After marking gig as done:
 if ($gigUpdated) {
@@ -56,11 +56,11 @@ if ($gigUpdated) {
 
 
 <?php
-/**
- * 3. RECORD PAYMENT TRANSACTION
- *
- * Add this when processing gig payment (when gig is marked as done)
- */
+
+
+
+
+
 ?>
 // Record transaction
 $transactionId = $economy->recordTransaction(
@@ -74,11 +74,11 @@ $transactionId = $economy->recordTransaction(
 
 
 <?php
-/**
- * 4. AWARD POINTS FOR RATING A FREELANCER
- *
- * Add this to community/rate_user.php after a rating is submitted
- */
+
+
+
+
+
 ?>
 // Award points for rating
 if ($ratingSubmitted) {
@@ -93,12 +93,12 @@ if ($ratingSubmitted) {
 
 
 <?php
-/**
- * 5. AWARD POINTS FOR FORUM PARTICIPATION
- *
- * Add this to community/forum.php or community/forum_view.php
- * When a new thread or reply is created
- */
+
+
+
+
+
+
 ?>
 // Award points for creating forum thread
 if ($threadCreated) {
@@ -124,12 +124,12 @@ if ($replyCreated) {
 
 
 <?php
-/**
- * 6. DAILY BATCH PROCESSING
- *
- * Create admin page: admin/batch_processor.php
- * Or add button to admin dashboard
- */
+
+
+
+
+
+
 ?>
 // In admin/batch_processor.php
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_batch'])) {
@@ -159,11 +159,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_batch'])) {
 
 
 <?php
-/**
- * 7. DISTRIBUTE BONUS POINTS
- *
- * For seasonal or promotional bonuses
- */
+
+
+
+
+
 ?>
 // Award bonus to all active users
 $stmt = $pdo->prepare("SELECT BRACU_ID FROM User");
@@ -182,12 +182,12 @@ foreach ($users as $user) {
 
 
 <?php
-/**
- * 8. AUTO-UPGRADE TIER
- *
- * Update user tier based on points
- * Run this after awarding points
- */
+
+
+
+
+
+
 ?>
 function updateUserTier($userId, $economy) {
     $userPoints = $economy->getUserPoints($userId);
@@ -217,11 +217,11 @@ function updateUserTier($userId, $economy) {
 
 
 <?php
-/**
- * 9. DISPLAY USER TIER BADGE
- *
- * Add to user profile or anywhere you want to show tier
- */
+
+
+
+
+
 ?>
 <?php
 $userPoints = $economy->getUserPoints($userId);
@@ -235,14 +235,14 @@ $tierEmojis = ['bronze' => '🥉', 'silver' => '🥈', 'gold' => '🥇', 'platin
 
 
 <?php
-/**
- * 10. SHOW POINT EARNINGS IN GIG LISTING
- *
- * Display in freelancer/marketplace.php or client/my_gigs.php
- */
+
+
+
+
+
 ?>
 <?php
-// Show potential earnings to freelancer in marketplace
+
 $pointsEarned = (int)floor($creditAmount / 4);
 ?>
 <div class="d-flex justify-content-between align-items-center">
@@ -256,14 +256,14 @@ $pointsEarned = (int)floor($creditAmount / 4);
 
 
 <?php
-/**
- * 11. QUICK TRANSACTION STATS
- *
- * Display on user dashboard
- */
+
+
+
+
+
 ?>
 <?php
-// Get transaction stats for dashboard
+
 $stmt = $pdo->prepare("
     SELECT
         COUNT(*) as total_transactions,
@@ -297,22 +297,22 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
 
 
 <?php
-/**
- * 12. HANDLE GIGS WITH POINTS INCENTIVE
- *
- * Show special badges for high-paying gigs with point bonuses
- */
+
+
+
+
+
 ?>
 <?php
 function getPointsBonus($gigAmount) {
     $basePoints = (int)floor($gigAmount / 4);
     $bonusMultiplier = 1;
 
-    // Bonus for high-value gigs
+    
     if ($gigAmount >= 500) {
-        $bonusMultiplier = 1.5;  // 50% bonus
+        $bonusMultiplier = 1.5;  
     } elseif ($gigAmount >= 200) {
-        $bonusMultiplier = 1.25;  // 25% bonus
+        $bonusMultiplier = 1.25;  
     }
 
     return (int)($basePoints * $bonusMultiplier);
@@ -326,36 +326,36 @@ $bonusPoints = getPointsBonus($creditAmount);
 
 
 <?php
-/**
- * 13. MANUAL VERIFICATION CHECK
- *
- * Verify transaction before processing (for debugging)
- */
+
+
+
+
+
 ?>
 <?php
-// Check if transaction valid before settling
+
 if ($economy->verifyTransaction($transactionId)) {
-    // Safe to process
+    
     $settled = settleTransaction($transactionId);
 } else {
-    // Transaction already processed or invalid
+    
     error_log("Invalid transaction: $transactionId");
 }
 ?>
 
 
 <?php
-/**
- * 14. EXPORT TRANSACTION REPORT
- *
- * Generate CSV or PDF report for admin
- */
+
+
+
+
+
 ?>
 <?php
-// Get all transactions for export
+
 $ledger = $economy->getTransactionLedger($userId, 1000, 0);
 
-// Generate CSV
+
 header('Content-Type: text/csv');
 header('Content-Disposition: attachment; filename="transactions.csv"');
 
@@ -379,11 +379,11 @@ fclose($output);
 
 
 <?php
-/**
- * 15. NOTIFICATION ON POINTS EARNED
- *
- * Send alert when user reaches milestone
- */
+
+
+
+
+
 ?>
 <?php
 function checkPointMilestones($userId, $economy) {
@@ -392,9 +392,9 @@ function checkPointMilestones($userId, $economy) {
 
     foreach ($milestones as $milestone) {
         if ($userPoints['lifetime_points'] === $milestone) {
-            // Send milestone notification
+            
             $message = "Congratulations! You've reached $milestone lifetime points! 🎉";
-            // Add to notifications table or send email
+            
         }
     }
 }

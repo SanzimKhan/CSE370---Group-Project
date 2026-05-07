@@ -1,7 +1,7 @@
 <?php
-/**
- * Check Database Tables
- */
+
+
+
 
 $dbHost = '127.0.0.1';
 $dbName = 'bracu_freelance_marketplace';
@@ -11,7 +11,7 @@ $dbPass = '';
 try {
     $pdo = new PDO("mysql:host=$dbHost;dbname=$dbName", $dbUser, $dbPass);
     
-    // Check which tables exist
+    
     $tables = ['User', 'Forum_Threads', 'Forum_Replies', 'Credit_History', 'messages', 'analytics_activity'];
     
     foreach ($tables as $table) {

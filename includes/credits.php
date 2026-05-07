@@ -4,19 +4,19 @@ declare(strict_types=1);
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/helpers.php';
 
-/**
- * Credit Management System
- * 
- * Core functions for managing user credits, top-ups, and credit history
- */
 
-// ============================================================================
-// CREDIT BALANCE FUNCTIONS
-// ============================================================================
 
-/**
- * Get user's current credit balance
- */
+
+
+
+
+
+
+
+
+
+
+
 function get_user_credit_balance(string $bracu_id): float
 {
     $stmt = db()->prepare('SELECT credit_balance FROM `User` WHERE BRACU_ID = :id');
@@ -26,9 +26,9 @@ function get_user_credit_balance(string $bracu_id): float
     return $result !== false ? (float) $result : 0.00;
 }
 
-/**
- * Add credits to user account
- */
+
+
+
 function add_credits(string $bracu_id, float $amount, string $type, ?string $reference_id = null, ?int $gig_id = null, string $description = ''): array
 {
     if ($amount <= 0) {
@@ -39,12 +39,12 @@ function add_credits(string $bracu_id, float $amount, string $type, ?string $ref
     try {
         $pdo->beginTransaction();
 
-        // Get current balance
+        
         $stmt = $pdo->prepare('SELECT credit_balance FROM `User` WHERE BRACU_ID = :id FOR UPDATE');
         $stmt->execute(['id' => $bracu_id]);
         $balance_before = (float) ($stmt->fetchColumn() ?? 0);
 
-        // Update user balance
+        
         $stmt = $pdo->prepare('UPDATE `User` SET credit_balance = credit_balance + :amount WHERE BRACU_ID = :id');
         $stmt->execute(['amount' => $amount, 'id' => $bracu_id]);
 
@@ -55,7 +55,7 @@ function add_credits(string $bracu_id, float $amount, string $type, ?string $ref
 
         $balance_after = $balance_before + $amount;
 
-        // Log to history
+        
         $history_id = generate_history_id();
         $stmt = $pdo->prepare(
             'INSERT INTO `Credit_History` (history_id, BRACU_ID, transaction_type, amount, balance_before, balance_after, reference_id, gig_id, description)
@@ -90,9 +90,9 @@ function add_credits(string $bracu_id, float $amount, string $type, ?string $ref
     }
 }
 
-/**
- * Deduct credits from user account (with validation)
- */
+
+
+
 function deduct_credits(string $bracu_id, float $amount, string $type, ?string $reference_id = null, ?int $gig_id = null, string $description = ''): array
 {
     if ($amount <= 0) {
@@ -103,12 +103,12 @@ function deduct_credits(string $bracu_id, float $amount, string $type, ?string $
     try {
         $pdo->beginTransaction();
 
-        // Get current balance with lock
+        
         $stmt = $pdo->prepare('SELECT credit_balance FROM `User` WHERE BRACU_ID = :id FOR UPDATE');
         $stmt->execute(['id' => $bracu_id]);
         $balance_before = (float) ($stmt->fetchColumn() ?? 0);
 
-        // Check sufficient balance
+        
         if ($balance_before === 0.0) {
             $userCheck = $pdo->prepare('SELECT BRACU_ID FROM `User` WHERE BRACU_ID = :id LIMIT 1');
             $userCheck->execute(['id' => $bracu_id]);
@@ -128,13 +128,13 @@ function deduct_credits(string $bracu_id, float $amount, string $type, ?string $
             ];
         }
 
-        // Deduct credits
+        
         $stmt = $pdo->prepare('UPDATE `User` SET credit_balance = credit_balance - :amount WHERE BRACU_ID = :id');
         $stmt->execute(['amount' => $amount, 'id' => $bracu_id]);
 
         $balance_after = $balance_before - $amount;
 
-        // Log to history
+        
         $history_id = generate_history_id();
         $stmt = $pdo->prepare(
             'INSERT INTO `Credit_History` (history_id, BRACU_ID, transaction_type, amount, balance_before, balance_after, reference_id, gig_id, description)
@@ -169,9 +169,9 @@ function deduct_credits(string $bracu_id, float $amount, string $type, ?string $
     }
 }
 
-/**
- * Transfer credits between users (with validation)
- */
+
+
+
 function transfer_credits(string $from_user, string $to_user, float $amount, string $reason = ''): array
 {
     if ($amount <= 0) {
@@ -186,7 +186,7 @@ function transfer_credits(string $from_user, string $to_user, float $amount, str
     try {
         $pdo->beginTransaction();
 
-        // Check sender has enough credits
+        
         $stmt = $pdo->prepare('SELECT credit_balance FROM `User` WHERE BRACU_ID = :id FOR UPDATE');
         $stmt->execute(['id' => $from_user]);
         $from_balance = (float) ($stmt->fetchColumn() ?? 0);
@@ -196,7 +196,7 @@ function transfer_credits(string $from_user, string $to_user, float $amount, str
             return ['ok' => false, 'message' => 'Insufficient credits for transfer.'];
         }
 
-        // Check recipient exists
+        
         $stmt = $pdo->prepare('SELECT BRACU_ID FROM `User` WHERE BRACU_ID = :id FOR UPDATE');
         $stmt->execute(['id' => $to_user]);
         if (!$stmt->fetchColumn()) {
@@ -208,11 +208,11 @@ function transfer_credits(string $from_user, string $to_user, float $amount, str
         $stmt->execute(['id' => $to_user]);
         $to_balance = (float) ($stmt->fetchColumn() ?? 0);
 
-        // Deduct from sender
+        
         $stmt = $pdo->prepare('UPDATE `User` SET credit_balance = credit_balance - :amount WHERE BRACU_ID = :id');
         $stmt->execute(['amount' => $amount, 'id' => $from_user]);
 
-        // Add to recipient
+        
         $stmt = $pdo->prepare('UPDATE `User` SET credit_balance = credit_balance + :amount WHERE BRACU_ID = :id');
         $stmt->execute(['amount' => $amount, 'id' => $to_user]);
 
@@ -221,7 +221,7 @@ function transfer_credits(string $from_user, string $to_user, float $amount, str
             return ['ok' => false, 'message' => 'Recipient update failed.'];
         }
 
-        // Log history for both
+        
         $ref_id = 'TRF-' . time() . '-' . mt_rand(1000, 9999);
 
         $stmt = $pdo->prepare(
@@ -266,13 +266,13 @@ function transfer_credits(string $from_user, string $to_user, float $amount, str
     }
 }
 
-// ============================================================================
-// CREDIT TOP-UP FUNCTIONS
-// ============================================================================
 
-/**
- * Create a credit top-up request
- */
+
+
+
+
+
+
 function create_topup_request(string $bracu_id, float $amount, string $payment_method = 'dummy'): array
 {
     if ($amount <= 0) {
@@ -320,16 +320,16 @@ function create_topup_request(string $bracu_id, float $amount, string $payment_m
     }
 }
 
-/**
- * Process dummy payment for top-up
- */
+
+
+
 function process_dummy_payment(string $topup_id): array
 {
     $pdo = db();
     try {
         $pdo->beginTransaction();
 
-        // Get topup request
+        
         $stmt = $pdo->prepare('SELECT * FROM `Credit_Topup` WHERE topup_id = :id FOR UPDATE');
         $stmt->execute(['id' => $topup_id]);
         $topup = $stmt->fetch();
@@ -344,7 +344,7 @@ function process_dummy_payment(string $topup_id): array
             return ['ok' => false, 'message' => 'This top-up has already been processed.'];
         }
 
-        // Simulate payment with 95% success rate (for testing edge cases)
+        
         $success = (mt_rand(0, 100) <= 95);
         
         if (!$success) {
@@ -354,18 +354,18 @@ function process_dummy_payment(string $topup_id): array
             return ['ok' => false, 'message' => 'Payment processing failed. Please retry.'];
         }
 
-        // Generate transaction reference
+        
         $txn_ref = 'TXN-' . time() . '-' . strtoupper(bin2hex(random_bytes(3)));
 
-        // Add bonus credits (5% for dummy payment)
+        
         $bonus = round($topup['amount'] * 0.05, 2);
 
-        // Get current balance before update
+        
         $stmt = $pdo->prepare('SELECT credit_balance FROM `User` WHERE BRACU_ID = :id FOR UPDATE');
         $stmt->execute(['id' => $topup['BRACU_ID']]);
         $balance_before = (float) ($stmt->fetchColumn() ?? 0);
 
-        // Update topup status
+        
         $stmt = $pdo->prepare(
             'UPDATE `Credit_Topup` 
              SET payment_status = :status, transaction_reference = :ref, bonus_credits = :bonus, completed_at = NOW(), updated_at = NOW() 
@@ -378,14 +378,14 @@ function process_dummy_payment(string $topup_id): array
             'id' => $topup_id
         ]);
 
-        // Add credits to user account (within same transaction)
+        
         $total_credits = $topup['amount'] + $bonus;
         $stmt = $pdo->prepare('UPDATE `User` SET credit_balance = credit_balance + :amount WHERE BRACU_ID = :id');
         $stmt->execute(['amount' => $total_credits, 'id' => $topup['BRACU_ID']]);
 
         $balance_after = $balance_before + $total_credits;
 
-        // Log to history
+        
         $history_id = generate_history_id();
         $stmt = $pdo->prepare(
             'INSERT INTO `Credit_History` (history_id, BRACU_ID, transaction_type, amount, balance_before, balance_after, reference_id, description)
@@ -423,9 +423,9 @@ function process_dummy_payment(string $topup_id): array
     }
 }
 
-/**
- * Get topup status and details
- */
+
+
+
 function get_topup_details(string $topup_id): ?array
 {
     $stmt = db()->prepare('SELECT * FROM `Credit_Topup` WHERE topup_id = :id');
@@ -433,9 +433,9 @@ function get_topup_details(string $topup_id): ?array
     return $stmt->fetch() ?: null;
 }
 
-/**
- * Get user's top-up history
- */
+
+
+
 function get_user_topup_history(string $bracu_id, int $limit = 20, int $offset = 0): array
 {
     $stmt = db()->prepare(
@@ -448,13 +448,13 @@ function get_user_topup_history(string $bracu_id, int $limit = 20, int $offset =
     return $stmt->fetchAll() ?: [];
 }
 
-// ============================================================================
-// CREDIT HISTORY FUNCTIONS
-// ============================================================================
 
-/**
- * Get user's credit history
- */
+
+
+
+
+
+
 function get_credit_history(string $bracu_id, int $limit = 50, int $offset = 0, ?string $type = null): array
 {
     if ($type) {
@@ -477,16 +477,16 @@ function get_credit_history(string $bracu_id, int $limit = 50, int $offset = 0, 
     return $stmt->fetchAll() ?: [];
 }
 
-/**
- * Get credit summary for user
- */
+
+
+
 function get_credit_summary(string $bracu_id): array
 {
     $pdo = db();
     
     $balance = get_user_credit_balance($bracu_id);
     
-    // Total earned
+    
     $stmt = $pdo->prepare(
         'SELECT SUM(amount) FROM `Credit_History` 
          WHERE BRACU_ID = :id AND transaction_type IN ("topup", "bonus", "gig_payment")'
@@ -494,7 +494,7 @@ function get_credit_summary(string $bracu_id): array
     $stmt->execute(['id' => $bracu_id]);
     $total_earned = (float) ($stmt->fetchColumn() ?? 0);
     
-    // Total spent
+    
     $stmt = $pdo->prepare(
         'SELECT SUM(amount) FROM `Credit_History` 
          WHERE BRACU_ID = :id AND transaction_type IN ("debit", "gig_payment")'
@@ -502,7 +502,7 @@ function get_credit_summary(string $bracu_id): array
     $stmt->execute(['id' => $bracu_id]);
     $total_spent = (float) ($stmt->fetchColumn() ?? 0);
     
-    // Recent transactions
+    
     $stmt = $pdo->prepare(
         'SELECT * FROM `Credit_History` 
          WHERE BRACU_ID = :id
@@ -521,13 +521,13 @@ function get_credit_summary(string $bracu_id): array
     ];
 }
 
-// ============================================================================
-// CREDIT BONUS FUNCTIONS
-// ============================================================================
 
-/**
- * Grant bonus credits to user
- */
+
+
+
+
+
+
 function grant_bonus(string $bracu_id, float $amount, string $bonus_type, string $reason, ?string $granted_by = null): array
 {
     if ($amount <= 0) {
@@ -569,9 +569,9 @@ function grant_bonus(string $bracu_id, float $amount, string $bonus_type, string
     }
 }
 
-/**
- * Get available (unredeemed) bonuses for user
- */
+
+
+
 function get_available_bonuses(string $bracu_id): array
 {
     $stmt = db()->prepare(
@@ -583,9 +583,9 @@ function get_available_bonuses(string $bracu_id): array
     return $stmt->fetchAll() ?: [];
 }
 
-/**
- * Calculate total available bonus credits
- */
+
+
+
 function get_total_available_bonus(string $bracu_id): float
 {
     $stmt = db()->prepare(
@@ -597,18 +597,18 @@ function get_total_available_bonus(string $bracu_id): float
     return $total !== null ? (float) $total : 0.00;
 }
 
-// ============================================================================
-// CREDIT LIMIT FUNCTIONS
-// ============================================================================
 
-/**
- * Check if user can spend credits
- */
+
+
+
+
+
+
 function can_spend_credits(string $bracu_id, float $amount): array
 {
     $pdo = db();
     
-    // Check if user is restricted
+    
     $stmt = $pdo->prepare(
         'SELECT is_restricted, restriction_reason, restricted_until, daily_limit, monthly_limit FROM `Credit_Limit` 
          WHERE BRACU_ID = :id'
@@ -617,7 +617,7 @@ function can_spend_credits(string $bracu_id, float $amount): array
     $limit = $stmt->fetch();
     
     if (!$limit) {
-        // Initialize limit if not exists
+        
         init_credit_limit($bracu_id);
         $limit = [
             'is_restricted' => 0,
@@ -637,7 +637,7 @@ function can_spend_credits(string $bracu_id, float $amount): array
         }
     }
     
-    // Check daily limit
+    
     $today_spent = get_today_spent($bracu_id);
     $daily_limit = (float) ($limit['daily_limit'] ?? 100000.00);
     
@@ -648,7 +648,7 @@ function can_spend_credits(string $bracu_id, float $amount): array
         ];
     }
     
-    // Check monthly limit
+    
     $month_spent = get_month_spent($bracu_id);
     $monthly_limit = (float) ($limit['monthly_limit'] ?? 500000.00);
     
@@ -662,9 +662,9 @@ function can_spend_credits(string $bracu_id, float $amount): array
     return ['allowed' => true];
 }
 
-/**
- * Get today's spending
- */
+
+
+
 function get_today_spent(string $bracu_id): float
 {
     $stmt = db()->prepare(
@@ -676,9 +676,9 @@ function get_today_spent(string $bracu_id): float
     return $total !== null ? (float) $total : 0.00;
 }
 
-/**
- * Get month's spending
- */
+
+
+
 function get_month_spent(string $bracu_id): float
 {
     $stmt = db()->prepare(
@@ -690,9 +690,9 @@ function get_month_spent(string $bracu_id): float
     return $total !== null ? (float) $total : 0.00;
 }
 
-/**
- * Initialize credit limit for user
- */
+
+
+
 function init_credit_limit(string $bracu_id): bool
 {
     try {
@@ -707,9 +707,9 @@ function init_credit_limit(string $bracu_id): bool
     }
 }
 
-/**
- * Restrict user's credit spending
- */
+
+
+
 function restrict_user_credits(string $bracu_id, string $reason, ?string $until = null): bool
 {
     try {
@@ -729,37 +729,37 @@ function restrict_user_credits(string $bracu_id, string $reason, ?string $until 
     }
 }
 
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
 
-/**
- * Generate unique topup ID
- */
+
+
+
+
+
+
 function generate_topup_id(): string
 {
     return 'TOP-' . date('YmdHis') . '-' . strtoupper(bin2hex(random_bytes(4)));
 }
 
-/**
- * Generate unique history ID
- */
+
+
+
 function generate_history_id(): string
 {
     return 'HIS-' . date('YmdHis') . '-' . strtoupper(bin2hex(random_bytes(3)));
 }
 
-/**
- * Format credit amount for display
- */
+
+
+
 function format_credits(float $amount): string
 {
     return '৳' . number_format($amount, 2);
 }
 
-/**
- * Get credit transaction type label
- */
+
+
+
 function get_transaction_type_label(string $type): string
 {
     $labels = [
@@ -773,9 +773,9 @@ function get_transaction_type_label(string $type): string
     return $labels[$type] ?? $type;
 }
 
-/**
- * Validate credit amount
- */
+
+
+
 function validate_credit_amount(float $amount, float $min = 1, float $max = 1000000): array
 {
     if ($amount < $min) {
@@ -790,9 +790,9 @@ function validate_credit_amount(float $amount, float $min = 1, float $max = 1000
     return ['valid' => true];
 }
 
-/**
- * Get payment method display name
- */
+
+
+
 function get_payment_method_label(string $method): string
 {
     $labels = [

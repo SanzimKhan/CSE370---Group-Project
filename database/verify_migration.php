@@ -1,7 +1,7 @@
 <?php
-/**
- * Database Migration Verification Script
- */
+
+
+
 
 declare(strict_types=1);
 
@@ -16,7 +16,7 @@ try {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ]);
 
-    // Check which tables exist
+    
     $tables = ['Credit_Topup', 'Credit_History', 'Credit_Bonus', 'Credit_Limit'];
     
     echo "Checking tables...\n";
@@ -36,12 +36,12 @@ try {
         }
     }
     
-    // Get user count
+    
     $stmt = $pdo->query("SELECT COUNT(*) FROM User");
     $userCount = (int)$stmt->fetchColumn();
     echo "\nTotal users in database: $userCount\n";
     
-    // Check for credit_balance column
+    
     $stmt = $pdo->query("DESCRIBE User");
     $columns = $stmt->fetchAll();
     $hasCreditBalance = (bool)array_filter($columns, fn($c) => $c['Field'] === 'credit_balance');

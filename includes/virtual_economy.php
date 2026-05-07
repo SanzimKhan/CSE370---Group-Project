@@ -8,16 +8,16 @@ class VirtualEconomy {
         $this->pdo = $pdo;
     }
 
-    // Points System Methods
+    
 
-    /**
-     * Award points to a user for completing an activity
-     */
+    
+
+
     public function awardPoints(string $userId, int $points, string $activityType, ?int $gigId = null, string $description = ''): bool {
         try {
             $this->pdo->beginTransaction();
 
-            // Update user points
+            
             $stmt = $this->pdo->prepare("
                 UPDATE User_Points
                 SET total_points = total_points + ?,
@@ -29,7 +29,7 @@ class VirtualEconomy {
             ");
             $stmt->execute([$points, $points, $points, $userId]);
 
-            // Log activity
+            
             $stmt = $this->pdo->prepare("
                 INSERT INTO Points_Activity (BRACU_ID, activity_type, points_amount, related_gig, description, created_at)
                 VALUES (?, ?, ?, ?, ?, NOW())
@@ -45,14 +45,14 @@ class VirtualEconomy {
         }
     }
 
-    /**
-     * Redeem points for credit
-     */
+    
+
+
     public function redeemPoints(string $userId, int $points): ?array {
         try {
             $this->pdo->beginTransaction();
 
-            // Check available points
+            
             $stmt = $this->pdo->prepare("SELECT available_points FROM User_Points WHERE BRACU_ID = ?");
             $stmt->execute([$userId]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -62,11 +62,11 @@ class VirtualEconomy {
                 return null;
             }
 
-            // Calculate credit (1 point = 0.1 credit by default)
+            
             $creditAmount = $points * 0.1;
             $redemptionId = 'RED-' . time() . '-' . bin2hex(random_bytes(4));
 
-            // Deduct points
+            
             $stmt = $this->pdo->prepare("
                 UPDATE User_Points
                 SET available_points = available_points - ?,
@@ -77,7 +77,7 @@ class VirtualEconomy {
             ");
             $stmt->execute([$points, $points, $userId]);
 
-            // Update user credit
+            
             $stmt = $this->pdo->prepare("
                 UPDATE User
                 SET credit_balance = credit_balance + ?
@@ -85,14 +85,14 @@ class VirtualEconomy {
             ");
             $stmt->execute([$creditAmount, $userId]);
 
-            // Record redemption
+            
             $stmt = $this->pdo->prepare("
                 INSERT INTO Redemption_History (redemption_id, BRACU_ID, points_redeemed, credit_received, redemption_rate, status, created_at)
                 VALUES (?, ?, ?, ?, ?, 'completed', NOW())
             ");
             $stmt->execute([$redemptionId, $userId, $points, $creditAmount, 0.1]);
 
-            // Log activity
+            
             $stmt = $this->pdo->prepare("
                 INSERT INTO Points_Activity (BRACU_ID, activity_type, points_amount, description, created_at)
                 VALUES (?, 'redeemed', ?, ?, NOW())
@@ -113,9 +113,9 @@ class VirtualEconomy {
         }
     }
 
-    /**
-     * Get user points summary
-     */
+    
+
+
     public function getUserPoints(string $userId): ?array {
         $stmt = $this->pdo->prepare("
             SELECT * FROM User_Points WHERE BRACU_ID = ?
@@ -124,9 +124,9 @@ class VirtualEconomy {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Get points activity history
-     */
+    
+
+
     public function getPointsActivity(string $userId, int $limit = 20, int $offset = 0): array {
         $stmt = $this->pdo->prepare("
             SELECT * FROM Points_Activity
@@ -138,11 +138,11 @@ class VirtualEconomy {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Transaction Ledger Methods
+    
 
-    /**
-     * Record a transaction in the ledger
-     */
+    
+
+
     public function recordTransaction(
         string $fromUser,
         string $toUser,
@@ -179,9 +179,9 @@ class VirtualEconomy {
         }
     }
 
-    /**
-     * Get transaction ledger for a user
-     */
+    
+
+
     public function getTransactionLedger(string $userId, int $limit = 50, int $offset = 0): array {
         $stmt = $this->pdo->prepare("
             SELECT tl.*,
@@ -200,9 +200,9 @@ class VirtualEconomy {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Verify a transaction for settlement
-     */
+    
+
+
     public function verifyTransaction(string $transactionId): bool {
         try {
             $stmt = $this->pdo->prepare("
@@ -222,11 +222,11 @@ class VirtualEconomy {
         }
     }
 
-    // Batch Processing Methods
+    
 
-    /**
-     * Create a new transaction batch
-     */
+    
+
+
     public function createBatch(string $batchType, string $initiatedBy): ?string {
         try {
             $batchId = 'BATCH-' . date('YmdHis') . '-' . bin2hex(random_bytes(3));
@@ -244,14 +244,14 @@ class VirtualEconomy {
         }
     }
 
-    /**
-     * Process a batch of transactions
-     */
+    
+
+
     public function processBatch(string $batchId): array {
         try {
             $this->pdo->beginTransaction();
 
-            // Get batch details
+            
             $stmt = $this->pdo->prepare("SELECT * FROM Transaction_Batch WHERE batch_id = ?");
             $stmt->execute([$batchId]);
             $batch = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -260,7 +260,7 @@ class VirtualEconomy {
                 return ['success' => false, 'error' => 'Batch not found'];
             }
 
-            // Update batch status
+            
             $stmt = $this->pdo->prepare("
                 UPDATE Transaction_Batch
                 SET status = 'processing', started_at = NOW()
@@ -268,7 +268,7 @@ class VirtualEconomy {
             ");
             $stmt->execute([$batchId]);
 
-            // Get all pending transactions for this batch
+            
             $stmt = $this->pdo->prepare("
                 SELECT * FROM Transaction_Ledger
                 WHERE batch_id = ? AND status = 'pending'
@@ -283,7 +283,7 @@ class VirtualEconomy {
 
             foreach ($transactions as $txn) {
                 try {
-                    // Process the transaction
+                    
                     $result = $this->settleTransaction($txn['transaction_id']);
 
                     if ($result) {
@@ -299,7 +299,7 @@ class VirtualEconomy {
                 }
             }
 
-            // Update batch completion
+            
             $stmt = $this->pdo->prepare("
                 UPDATE Transaction_Batch
                 SET status = 'completed',
@@ -337,14 +337,14 @@ class VirtualEconomy {
         }
     }
 
-    /**
-     * Settle a single transaction
-     */
+    
+
+
     private function settleTransaction(string $transactionId): bool {
         try {
             $this->pdo->beginTransaction();
 
-            // Get transaction
+            
             $stmt = $this->pdo->prepare("SELECT * FROM Transaction_Ledger WHERE transaction_id = ?");
             $stmt->execute([$transactionId]);
             $txn = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -353,7 +353,7 @@ class VirtualEconomy {
                 return false;
             }
 
-            // Deduct from sender
+            
             $stmt = $this->pdo->prepare("
                 UPDATE User
                 SET credit_balance = credit_balance - ?
@@ -361,7 +361,7 @@ class VirtualEconomy {
             ");
             $stmt->execute([$txn['amount'], $txn['from_user']]);
 
-            // Add to recipient
+            
             $stmt = $this->pdo->prepare("
                 UPDATE User
                 SET credit_balance = credit_balance + ?
@@ -369,7 +369,7 @@ class VirtualEconomy {
             ");
             $stmt->execute([$txn['amount'], $txn['to_user']]);
 
-            // Mark transaction as completed
+            
             $stmt = $this->pdo->prepare("
                 UPDATE Transaction_Ledger
                 SET status = 'completed', completed_at = NOW()
@@ -386,18 +386,18 @@ class VirtualEconomy {
         }
     }
 
-    /**
-     * Get batch details
-     */
+    
+
+
     public function getBatch(string $batchId): ?array {
         $stmt = $this->pdo->prepare("SELECT * FROM Transaction_Batch WHERE batch_id = ?");
         $stmt->execute([$batchId]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Get batch history
-     */
+    
+
+
     public function getBatchHistory(int $limit = 20, int $offset = 0): array {
         $stmt = $this->pdo->prepare("
             SELECT tb.*, u.full_name as initiated_by_name
@@ -410,11 +410,11 @@ class VirtualEconomy {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Dispute Methods
+    
 
-    /**
-     * Create a dispute
-     */
+    
+
+
     public function createDispute(
         string $transactionId,
         string $complainantId,
@@ -449,9 +449,9 @@ class VirtualEconomy {
         }
     }
 
-    /**
-     * Get disputes for a user
-     */
+    
+
+
     public function getUserDisputes(string $userId, int $limit = 20, int $offset = 0): array {
         $stmt = $this->pdo->prepare("
             SELECT td.*,
@@ -470,9 +470,9 @@ class VirtualEconomy {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Resolve a dispute with refund or rejection
-     */
+    
+
+
     public function resolveDispute(
         string $disputeId,
         string $resolutionType,
@@ -483,7 +483,7 @@ class VirtualEconomy {
         try {
             $this->pdo->beginTransaction();
 
-            // Get dispute
+            
             $stmt = $this->pdo->prepare("SELECT * FROM Transaction_Disputes WHERE dispute_id = ?");
             $stmt->execute([$disputeId]);
             $dispute = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -492,9 +492,9 @@ class VirtualEconomy {
                 return false;
             }
 
-            // If refund, process it
+            
             if ($resolutionType === 'refund' && $refundAmount) {
-                // Add refund to complainant
+                
                 $stmt = $this->pdo->prepare("
                     UPDATE User
                     SET credit_balance = credit_balance + ?
@@ -502,7 +502,7 @@ class VirtualEconomy {
                 ");
                 $stmt->execute([$refundAmount, $dispute['complainant_id']]);
 
-                // Record refund transaction
+                
                 $this->recordTransaction(
                     $dispute['respondent_id'],
                     $dispute['complainant_id'],
@@ -513,7 +513,7 @@ class VirtualEconomy {
                 );
             }
 
-            // Update dispute resolution
+            
             $stmt = $this->pdo->prepare("
                 UPDATE Transaction_Disputes
                 SET status = 'resolved',
@@ -542,9 +542,9 @@ class VirtualEconomy {
         }
     }
 
-    /**
-     * Get all open disputes (admin view)
-     */
+    
+
+
     public function getOpenDisputes(int $limit = 50, int $offset = 0): array {
         $stmt = $this->pdo->prepare("
             SELECT td.*,

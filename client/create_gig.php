@@ -52,7 +52,7 @@ if (is_post_request()) {
 
         $gigId = (int) db()->lastInsertId();
         
-        // Track gig creation
+        
         $analytics = new Analytics(db());
         $analytics->logActivity($user['BRACU_ID'], 'gig_create', $gigId, null, [
             'category' => $category,

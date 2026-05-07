@@ -26,7 +26,7 @@ foreach ($steps as $label => $sql) {
             continue;
         }
 
-        // Some MySQL variants may not support ALTER COLUMN default syntax.
+        
         if (str_contains($label, 'default to 500')) {
             try {
                 $pdo->exec("ALTER TABLE `User` MODIFY `credit_balance` DECIMAL(10,2) NOT NULL DEFAULT 500.00");

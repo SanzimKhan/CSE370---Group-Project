@@ -5,13 +5,13 @@ require_once '../includes/db.php';
 require_once '../includes/auth.php';
 require_once '../includes/virtual_economy.php';
 
-// Check authentication and admin status
+
 if (!isLoggedIn()) {
     header('Location: ../index.php');
     exit;
 }
 
-// Check admin role
+
 $stmt = $pdo->prepare("SELECT is_admin FROM User WHERE BRACU_ID = ?");
 $stmt->execute([$_SESSION['bracu_id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -24,7 +24,7 @@ if (!$user || !$user['is_admin']) {
 $userId = $_SESSION['bracu_id'];
 $economy = new VirtualEconomy($pdo);
 
-// Handle dispute resolution
+
 $message = '';
 $messageType = '';
 
@@ -55,13 +55,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-// Get open and under-review disputes
+
 $page = max(1, (int)($_GET['page'] ?? 1));
 $perPage = 15;
 $offset = ($page - 1) * $perPage;
 $disputes = $economy->getOpenDisputes($perPage, $offset);
 
-// Get total count
+
 $stmt = $pdo->prepare("
     SELECT COUNT(*) as total FROM Transaction_Disputes
     WHERE status IN ('open', 'under_review')

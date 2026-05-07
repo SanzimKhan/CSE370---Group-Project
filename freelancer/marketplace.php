@@ -19,7 +19,7 @@ if (is_post_request()) {
         $result = accept_gig($gigId, $user['BRACU_ID']);
 
         if ($result['ok']) {
-            // Track gig application
+            
             $analytics->logActivity($user['BRACU_ID'], 'gig_apply', $gigId);
             
             $client = find_user_by_bracu_id($result['gig']['BRACU_ID']);
@@ -70,7 +70,7 @@ $statement = db()->prepare($sql);
 $statement->execute($params);
 $gigs = $statement->fetchAll();
 
-// Track gig views for displayed gigs
+
 foreach ($gigs as $gig) {
     $analytics->logGigView((int) $gig['GID'], $user['BRACU_ID']);
 }

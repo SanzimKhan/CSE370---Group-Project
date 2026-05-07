@@ -10,13 +10,13 @@ class Search
         $this->pdo = $pdo;
     }
 
-    /**
-     * Index a gig for full-text search
-     */
+    
+
+
     public function indexGig(int $gig_id, string $title = '', string $description = '', string $category = ''): bool
     {
         try {
-            // Get gig details if not provided
+            
             if (empty($title) || empty($description)) {
                 $query = "SELECT LIST_OF_GIGS as description, CATAGORY FROM Gigs WHERE GID = ?";
                 $stmt = $this->pdo->prepare($query);
@@ -35,10 +35,10 @@ class Search
                 }
             }
 
-            // Build search keywords
+            
             $keywords = $this->generateSearchKeywords($title, $description, $category);
 
-            // Insert or update index
+            
             $query = "INSERT INTO Gig_Search_Index (GID, search_keywords)
                       VALUES (?, ?)
                       ON DUPLICATE KEY UPDATE search_keywords = ?, updated_at = NOW()";
@@ -51,9 +51,9 @@ class Search
         }
     }
 
-    /**
-     * Search gigs using full-text search
-     */
+    
+
+
     public function searchGigs(string $query, string $category = '', int $limit = 20, int $offset = 0): array
     {
         try {
@@ -89,9 +89,9 @@ class Search
         }
     }
 
-    /**
-     * Advanced search with filters
-     */
+    
+
+
     public function advancedSearch(
         ?string $keyword = null,
         ?string $category = null,
@@ -125,7 +125,7 @@ class Search
 
             $query .= " GROUP BY g.GID";
 
-            // Sort options
+            
             switch ($sort_by) {
                 case 'price_high':
                     $query .= " ORDER BY g.CREDIT_AMOUNT DESC";
@@ -139,7 +139,7 @@ class Search
                 case 'deadline':
                     $query .= " ORDER BY g.DEADLINE ASC";
                     break;
-                default: // recent
+                default: 
                     $query .= " ORDER BY g.created_at DESC";
             }
 
@@ -156,9 +156,9 @@ class Search
         }
     }
 
-    /**
-     * Suggest search keywords based on partial input
-     */
+    
+
+
     public function getSearchSuggestions(string $partial_query, int $limit = 10): array
     {
         try {
@@ -178,9 +178,9 @@ class Search
         }
     }
 
-    /**
-     * Search users by name or bio
-     */
+    
+
+
     public function searchUsers(string $query, ?string $current_user = null, int $limit = 20, int $offset = 0): array
     {
         try {
@@ -215,9 +215,9 @@ class Search
         }
     }
 
-    /**
-     * Remove gig from search index (when gig is deleted or unlisted)
-     */
+    
+
+
     public function removeFromIndex(int $gig_id): bool
     {
         try {
@@ -230,18 +230,18 @@ class Search
         }
     }
 
-    /**
-     * Reindex all gigs (admin task)
-     */
+    
+
+
     public function reindexAllGigs(): int
     {
         try {
             $count = 0;
 
-            // First clear the index
+            
             $this->pdo->exec("DELETE FROM Gig_Search_Index");
 
-            // Get all active gigs
+            
             $query = "SELECT GID, LIST_OF_GIGS, CATAGORY FROM Gigs WHERE STATUS = 'listed'";
             $stmt = $this->pdo->prepare($query);
             $stmt->execute();
@@ -259,25 +259,25 @@ class Search
         }
     }
 
-    /**
-     * Generate search keywords from gig content
-     */
+    
+
+
     private function generateSearchKeywords(string $title, string $description, string $category): string
     {
-        // Extract key terms from description
+        
         $keywords = [];
 
-        // Add category
+        
         if (!empty($category)) {
             $keywords[] = $category;
         }
 
-        // Add title
+        
         if (!empty($title)) {
             $keywords[] = $title;
         }
 
-        // Extract common words from description (remove common stop words)
+        
         $stop_words = ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'];
         $words = str_word_count(strtolower($description), 1);
         $filtered_words = array_filter($words, function ($word) use ($stop_words) {

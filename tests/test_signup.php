@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-// Simple CLI test for register_user
+
 require_once __DIR__ . '/../includes/auth.php';
 
 function random_bracu_id(): string {
-    // generate an 8 digit number starting with 20xxxxxx for realism
+    
     return (string) mt_rand(20000000, 20999999);
 }
 

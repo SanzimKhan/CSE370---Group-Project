@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-/**
- * Test: Message Freelancer Feature
- * Tests the full flow of adding a message button to my_gigs and sending messages.
- */
+
+
+
+
 
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/community.php';
@@ -13,13 +13,13 @@ session_start();
 
 echo "=== MESSAGE FREELANCER FEATURE TEST ===\n\n";
 
-// Step 1: Create test users
+
 echo "[1] Creating test client and freelancer accounts...\n";
 
 $client_bracu = (string) mt_rand(20000000, 20999999);
 $freelancer_bracu = (string) mt_rand(20000000, 20999999);
 
-// Ensure they're different
+
 while ($client_bracu === $freelancer_bracu) {
     $freelancer_bracu = (string) mt_rand(20000000, 20999999);
 }
@@ -50,7 +50,7 @@ if (!$client || !$freelancer) {
 echo "✓ Client: {$client['BRACU_ID']} ({$client['Bracu_mail']})\n";
 echo "✓ Freelancer: {$freelancer['BRACU_ID']} ({$freelancer['Bracu_mail']})\n\n";
 
-// Step 2: Create a gig for the client
+
 echo "[2] Creating a gig for the client...\n";
 
 $pdo = db();
@@ -77,7 +77,7 @@ if (!$success) {
 $gig_id = $pdo->lastInsertId();
 echo "✓ Gig #$gig_id created (Status: pending)\n\n";
 
-// Step 3: Assign freelancer to work on gig
+
 echo "[3] Assigning freelancer to work on gig...\n";
 
 $assign = $pdo->prepare(
@@ -98,12 +98,12 @@ if (!$success) {
 
 echo "✓ Freelancer {$freelancer['BRACU_ID']} assigned to Gig #$gig_id\n\n";
 
-// Step 4: Test message creation via Community class
+
 echo "[4] Testing message sending...\n";
 
 $community = new Community($pdo);
 
-// Client sends message to freelancer about the gig
+
 $msg_success = $community->sendMessage(
     $client['BRACU_ID'],
     $freelancer['BRACU_ID'],
@@ -118,7 +118,7 @@ if (!$msg_success) {
 
 echo "✓ Message sent from client to freelancer\n";
 
-// Freelancer replies
+
 $reply_success = $community->sendMessage(
     $freelancer['BRACU_ID'],
     $client['BRACU_ID'],
@@ -133,7 +133,7 @@ if (!$reply_success) {
 
 echo "✓ Reply sent from freelancer to client\n\n";
 
-// Step 5: Verify conversation
+
 echo "[5] Verifying conversation in database...\n";
 
 $conversation = $community->getConversation($client['BRACU_ID'], $freelancer['BRACU_ID']);
@@ -150,7 +150,7 @@ foreach ($conversation as $msg) {
 }
 echo "\n";
 
-// Step 6: Verify gig lookup works
+
 echo "[6] Verifying gig context lookup...\n";
 
 $query = "SELECT g.*, w.BRACU_ID as freelancer_id FROM Gigs g
@@ -170,7 +170,7 @@ echo "✓ Gig context retrieved: Gig #{$gig_info['GID']}\n";
 echo "  - Freelancer ID: {$gig_info['freelancer_id']}\n";
 echo "  - Status: {$gig_info['STATUS']}\n\n";
 
-// Step 7: Verify message URLs would work
+
 echo "[7] Verifying message URLs...\n";
 
 $message_url = "community/messages.php?user=" . urlencode($freelancer['BRACU_ID']) . "&gig=" . (int) $gig_id;

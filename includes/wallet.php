@@ -148,10 +148,10 @@ function mark_gig_done_and_release_payment(int $gigId, string $clientId): array
         );
         $releaseStatement->execute(['gid' => $gigId]);
 
-        // Log to credit history
+        
         $ref_id = 'GIG-' . $gigId . '-' . time();
         
-        // Client debit history
+        
         $historyIdClient = 'HIS-' . date('YmdHis') . '-' . strtoupper(bin2hex(random_bytes(3)));
         $historyStmt = $pdo->prepare(
             'INSERT INTO `Credit_History` (history_id, BRACU_ID, transaction_type, amount, balance_before, balance_after, reference_id, gig_id, description)
@@ -169,7 +169,7 @@ function mark_gig_done_and_release_payment(int $gigId, string $clientId): array
             'description' => "Payment released for gig #$gigId"
         ]);
 
-        // Freelancer earning history
+        
         $historyIdFreelancer = 'HIS-' . date('YmdHis') . '-' . strtoupper(bin2hex(random_bytes(3)));
         $historyStmt->execute([
             'history_id' => $historyIdFreelancer,
@@ -207,7 +207,7 @@ function delete_gig(int $gigId, string $clientId): array
     try {
         $pdo->beginTransaction();
 
-        // Fetch gig with lock
+        
         $gigStatement = $pdo->prepare('SELECT * FROM `Gigs` WHERE GID = :gid FOR UPDATE');
         $gigStatement->execute(['gid' => $gigId]);
         $gig = $gigStatement->fetch();
@@ -227,7 +227,7 @@ function delete_gig(int $gigId, string $clientId): array
             return ['ok' => false, 'message' => 'Only listed gigs can be deleted. Cannot delete pending or completed gigs.'];
         }
 
-        // Check if anyone has accepted this gig
+        
         $checkAcceptedStatement = $pdo->prepare('SELECT COUNT(*) as count FROM `Working_on` WHERE GID = :gid');
         $checkAcceptedStatement->execute(['gid' => $gigId]);
         $accepted = $checkAcceptedStatement->fetch();
@@ -237,7 +237,7 @@ function delete_gig(int $gigId, string $clientId): array
             return ['ok' => false, 'message' => 'Cannot delete: A freelancer has already accepted this gig.'];
         }
 
-        // Delete the gig
+        
         $deleteStatement = $pdo->prepare('DELETE FROM `Gigs` WHERE GID = :gid');
         $deleteStatement->execute(['gid' => $gigId]);
 

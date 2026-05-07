@@ -7,10 +7,10 @@ require_once dirname(__DIR__) . '/includes/auth.php';
 require_once dirname(__DIR__) . '/includes/community.php';
 require_once dirname(__DIR__) . '/includes/analytics.php';
 
-// Require login
+
 $user = require_login();
 
-// Get conversation user ID
+
 $contact_id = $_GET['user'] ?? null;
 $gig_context = (int) ($_GET['gig'] ?? 0);
 
@@ -21,7 +21,7 @@ if (!$contact_id) {
 $pdo = db();
 $community = new Community($pdo);
 
-// Verify contact exists
+
 $query = "SELECT full_name, avatar_path FROM User WHERE BRACU_ID = ?";
 $stmt = $pdo->prepare($query);
 $stmt->execute([$contact_id]);
@@ -31,7 +31,7 @@ if (!$contact) {
     redirect('messages_inbox.php');
 }
 
-// Validate gig context if provided (must be owned by current user or freelancer)
+
 $gig_info = null;
 if ($gig_context > 0) {
     $query = "SELECT g.*, w.BRACU_ID as freelancer_id FROM Gigs g
@@ -43,7 +43,7 @@ if ($gig_context > 0) {
     $gig_info = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-// Handle message sending
+
 if (is_post_request()) {
     enforce_csrf_or_fail('messages.php?user=' . urlencode($contact_id));
 
@@ -53,24 +53,24 @@ if (is_post_request()) {
     if ($message_text) {
         $community->sendMessage($user['BRACU_ID'], $contact_id, $message_text, $gig_id ?: null);
 
-        // Track message send
+        
         $analytics = new Analytics($pdo);
         $analytics->logActivity($user['BRACU_ID'], 'message_send', $gig_id ?: null, $contact_id);
 
-        // Mark messages as read
+        
         $community->markMessagesAsRead($contact_id, $user['BRACU_ID']);
 
         redirect('messages.php?user=' . urlencode($contact_id));
     }
 }
 
-// Get conversation messages
+
 $messages = $community->getConversation($user['BRACU_ID'], $contact_id);
 
-// Mark messages as read
+
 $community->markMessagesAsRead($contact_id, $user['BRACU_ID']);
 
-// Get user's gigs for context
+
 $query = "SELECT GID, LIST_OF_GIGS FROM Gigs WHERE BRACU_ID = ? LIMIT 10";
 $stmt = $pdo->prepare($query);
 $stmt->execute([$user['BRACU_ID']]);

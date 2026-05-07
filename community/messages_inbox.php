@@ -6,17 +6,17 @@ require_once dirname(__DIR__) . '/includes/db.php';
 require_once dirname(__DIR__) . '/includes/auth.php';
 require_once dirname(__DIR__) . '/includes/community.php';
 
-// Require login
+
 $user = require_login();
 $pageTitle = 'Messages';
 
 $pdo = db();
 $community = new Community($pdo);
 
-// Get conversations
+
 $conversations = $community->getUserConversations($user['BRACU_ID']);
 
-// Get unread count
+
 $unread_count = $community->getUnreadMessageCount($user['BRACU_ID']);
 
 require_once dirname(__DIR__) . '/includes/header.php';

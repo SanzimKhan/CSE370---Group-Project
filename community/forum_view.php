@@ -6,7 +6,7 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/community.php';
 
-// Check authentication
+
 $currentUser = require_login();
 $creatorId = (string) ($currentUser['BRACU_ID'] ?? '');
 
@@ -20,7 +20,7 @@ if (!$thread_id) {
     exit;
 }
 
-// Handle new reply
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_reply'])) {
     $reply_text = trim($_POST['reply_text'] ?? '');
     
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_reply'])) {
     }
 }
 
-// Get thread with replies
+
 $thread_data = $community->getForumThreadWithReplies($thread_id);
 
 if (empty($thread_data)) {

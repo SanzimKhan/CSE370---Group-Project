@@ -1,18 +1,18 @@
 <?php
-/**
- * Database Table Creation Page
- * 
- * This page creates all necessary tables for the BRACU Freelance Marketplace
- * Access via: http://localhost/proj/setup_database.php?action=create
- */
+
+
+
+
+
+
 
 declare(strict_types=1);
 
-// Set error reporting
+
 ini_set('display_errors', '1');
 error_reporting(E_ALL);
 
-// Get database configuration
+
 $dbHost = '127.0.0.1';
 $dbPort = 3306;
 $dbName = 'bracu_freelance_marketplace';
@@ -22,9 +22,9 @@ $dbPass = '';
 $results = [];
 $isExecuting = isset($_GET['action']) && $_GET['action'] === 'create';
 
-// Execute if action is requested
+
 if ($isExecuting) {
-    // Create connection
+    
     $connection = new mysqli($dbHost . ':' . $dbPort, $dbUser, $dbPass);
 
     if ($connection->connect_error) {
@@ -32,7 +32,7 @@ if ($isExecuting) {
     } else {
         $results['connected'] = true;
 
-        // Read schema.sql
+        
         $schemaFile = __DIR__ . '/database/schema.sql';
 
         if (!file_exists($schemaFile)) {
@@ -45,7 +45,7 @@ if ($isExecuting) {
             } else {
                 $results['fileSize'] = strlen($sqlContent);
 
-                // Split SQL statements and filter empty ones
+                
                 $statements = array_filter(
                     array_map('trim', preg_split('/;(?=\s|$)/i', $sqlContent)),
                     function ($stmt) {
@@ -58,7 +58,7 @@ if ($isExecuting) {
                 $successCount = 0;
                 $errorCount = 0;
 
-                // Execute each statement
+                
                 foreach ($statements as $index => $statement) {
                     $statement = trim($statement);
                     
@@ -73,19 +73,19 @@ if ($isExecuting) {
                         'status' => 'pending'
                     ];
                     
-                    // Extract action for display
+                    
                     if (preg_match('/^(CREATE|CREATE INDEX|ALTER|DROP)/i', $statement, $matches)) {
                         $statementResult['action'] = strtoupper($matches[1]);
                         
-                        // Try to extract what's being created
+                        
                         if (preg_match('/CREATE\s+(?:TABLE|INDEX|DATABASE)\s+(?:IF\s+NOT\s+EXISTS\s+)?`?(\w+)`?/i', $statement, $nameMatch)) {
                             $statementResult['objectName'] = $nameMatch[1];
                         }
                     }
                     
-                    // Execute the statement
+                    
                     if ($connection->multi_query($statement . ';')) {
-                        // Consume all results
+                        
                         do {
                             if ($connection->store_result()) {
                                 $connection->free_result();

@@ -1,7 +1,7 @@
 <?php
-/**
- * Create Forum Tables
- */
+
+
+
 
 declare(strict_types=1);
 
@@ -17,7 +17,7 @@ try {
         die("Connection failed: " . $connection->connect_error);
     }
 
-    // Create Forum_Threads table
+    
     $sql1 = "CREATE TABLE IF NOT EXISTS `Forum_Threads` (
         id INT AUTO_INCREMENT PRIMARY KEY,
         creator_id VARCHAR(20) NOT NULL,
@@ -43,7 +43,7 @@ try {
         echo "✗ Forum_Threads: " . $connection->error . "\n";
     }
 
-    // Create Forum_Replies table
+    
     $sql2 = "CREATE TABLE IF NOT EXISTS `Forum_Replies` (
         id INT AUTO_INCREMENT PRIMARY KEY,
         thread_id INT NOT NULL,

@@ -11,7 +11,7 @@ try {
     $pdo = db();
     echo "✓ Database connection successful\n\n";
 
-    // Check if analytics tables exist
+    
     echo "Checking analytics tables...\n";
     
     $tables = ['Analytics_Activity', 'Gig_Views', 'User_Earnings'];
@@ -20,7 +20,7 @@ try {
         if ($stmt->rowCount() > 0) {
             echo "✓ Table $table exists\n";
             
-            // Get row count
+            
             $stmt = $pdo->query("SELECT COUNT(*) as count FROM `$table`");
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             echo "  - Records: {$result['count']}\n";
@@ -31,12 +31,12 @@ try {
     
     echo "\n";
 
-    // Test Analytics class
+    
     echo "Testing Analytics class...\n";
     $analytics = new Analytics($pdo);
     echo "✓ Analytics class instantiated\n\n";
 
-    // Get a test user
+    
     $stmt = $pdo->query("SELECT BRACU_ID FROM User LIMIT 1");
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
@@ -44,7 +44,7 @@ try {
         $test_bracu_id = $user['BRACU_ID'];
         echo "Testing with user: $test_bracu_id\n\n";
 
-        // Test logActivity
+        
         echo "Testing logActivity()...\n";
         $result = $analytics->logActivity($test_bracu_id, 'login');
         if ($result) {
@@ -53,7 +53,7 @@ try {
             echo "✗ Failed to log activity\n";
         }
 
-        // Test getUserAnalytics
+        
         echo "\nTesting getUserAnalytics()...\n";
         $user_analytics = $analytics->getUserAnalytics($test_bracu_id);
         echo "✓ User analytics retrieved\n";
@@ -73,7 +73,7 @@ try {
             }
         }
 
-        // Test with a gig if available
+        
         $stmt = $pdo->query("SELECT GID FROM Gigs LIMIT 1");
         $gig = $stmt->fetch(PDO::FETCH_ASSOC);
         
@@ -81,7 +81,7 @@ try {
             $test_gig_id = $gig['GID'];
             echo "\nTesting with gig: $test_gig_id\n";
 
-            // Test logGigView
+            
             echo "\nTesting logGigView()...\n";
             $result = $analytics->logGigView($test_gig_id, $test_bracu_id);
             if ($result) {
@@ -90,17 +90,17 @@ try {
                 echo "✗ Failed to log gig view\n";
             }
 
-            // Test getGigViewsCount
+            
             echo "\nTesting getGigViewsCount()...\n";
             $views = $analytics->getGigViewsCount($test_gig_id);
             echo "✓ Gig views count: $views\n";
 
-            // Test getGigUniqueViewersCount
+            
             echo "\nTesting getGigUniqueViewersCount()...\n";
             $unique_viewers = $analytics->getGigUniqueViewersCount($test_gig_id);
             echo "✓ Unique viewers count: $unique_viewers\n";
 
-            // Test getGigAnalytics
+            
             echo "\nTesting getGigAnalytics()...\n";
             $gig_analytics = $analytics->getGigAnalytics($test_gig_id);
             echo "✓ Gig analytics retrieved\n";
@@ -113,7 +113,7 @@ try {
             echo "\n⚠ No gigs found in database for testing\n";
         }
 
-        // Test getTrendingGigs
+        
         echo "\nTesting getTrendingGigs()...\n";
         $trending = $analytics->getTrendingGigs(5, 30);
         echo "✓ Trending gigs retrieved: " . count($trending) . " gigs\n";
@@ -123,7 +123,7 @@ try {
             }
         }
 
-        // Test getUserActivityHistory
+        
         echo "\nTesting getUserActivityHistory()...\n";
         $history = $analytics->getUserActivityHistory($test_bracu_id, 10);
         echo "✓ Activity history retrieved: " . count($history) . " activities\n";

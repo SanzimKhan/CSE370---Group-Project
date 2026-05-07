@@ -41,7 +41,7 @@ $availableStatement->execute([
 ]);
 $availableCount = (int) $availableStatement->fetchColumn();
 
-// Get credit information
+
 $creditBalance = get_user_credit_balance($user['BRACU_ID']);
 $creditSummary = get_credit_summary($user['BRACU_ID']);
 

@@ -30,7 +30,7 @@ if (!$profile) {
     exit;
 }
 
-// Track profile view
+
 $currentUser = current_user();
 if ($currentUser && $currentUser['BRACU_ID'] !== $profileUserId) {
     $analytics = new Analytics($pdo);

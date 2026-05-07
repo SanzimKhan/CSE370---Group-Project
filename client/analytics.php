@@ -6,19 +6,19 @@ require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/analytics.php';
 
-// Check authentication
+
 if (!isset($_SESSION['user_bracu_id'])) {
     header('Location: ../index.php');
     exit;
 }
 
-// Check if user has hiring mode
+
 $pdo = db();
 $stmt = $pdo->prepare("SELECT preferred_mode FROM User WHERE BRACU_ID = ?");
 $stmt->execute([$_SESSION['user_bracu_id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Allow access if user exists AND (preferred_mode is 'hiring' OR mode=hiring is in URL)
+
 if (!$user || ($user['preferred_mode'] !== 'hiring' && (!isset($_GET['mode']) || $_GET['mode'] !== 'hiring'))) {
     header('Location: ../index.php');
     exit;
@@ -26,10 +26,10 @@ if (!$user || ($user['preferred_mode'] !== 'hiring' && (!isset($_GET['mode']) ||
 
 $analytics = new Analytics($pdo);
 
-// Get user analytics (from client perspective)
+
 $user_analytics = $analytics->getUserAnalytics($_SESSION['user_bracu_id']);
 
-// Get spending statistics
+
 $query = "SELECT
             COUNT(DISTINCT GID) as total_gigs_posted,
             SUM(CREDIT_AMOUNT) as total_spent,
@@ -42,7 +42,7 @@ $stmt = $pdo->prepare($query);
 $stmt->execute([$_SESSION['user_bracu_id']]);
 $spending = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Get average per gig
+
 $query = "SELECT
             AVG(CREDIT_AMOUNT) as avg_credit,
             MIN(CREDIT_AMOUNT) as min_credit,
@@ -53,7 +53,7 @@ $stmt = $pdo->prepare($query);
 $stmt->execute([$_SESSION['user_bracu_id']]);
 $credits_stats = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Get category breakdown
+
 $query = "SELECT CATAGORY, COUNT(*) as count, SUM(CREDIT_AMOUNT) as total_spent
           FROM Gigs
           WHERE BRACU_ID = ?

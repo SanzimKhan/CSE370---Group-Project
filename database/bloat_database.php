@@ -1,113 +1,113 @@
 <?php
-/**
- * Database Bloat Script for BRACU Freelance Marketplace
- * 
- * This script creates comprehensive dummy data for all tables in the marketplace database.
- * It includes dummy users with clear passwords for testing purposes.
- * 
- * DUMMY USER CREDENTIALS:
- * ========================
- * Admin User:
- *   - BRACU ID: 20101000
- *   - Email: 20101000@g.bracu.ac.bd
- *   - Password: password123
- * 
- * Freelancer Users (20101001-20101050):
- *   - Pattern: 201010XX@g.bracu.ac.bd
- *   - Password: password123
- * 
- * Client Users (20101051-20101100):
- *   - Pattern: 201010XX@g.bracu.ac.bd
- *   - Password: password123
- * 
- * Regular Users (20101101-20101150):
- *   - Pattern: 201010XX@g.bracu.ac.bd
- *   - Password: password123
- * 
- * ALL DUMMY USERS USE PASSWORD: password123
- * Hashed: $2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/db.php';
 
-set_time_limit(300); // 5 minutes timeout for data generation
+set_time_limit(300); 
 
-$password_hash = '$2y$10$3UiOi2izYE1XFr1ufoMe4eV2rYqnmFV9q2KA0NA98eqBEQNtAulQK'; // password123 (verified)
+$password_hash = '$2y$10$3UiOi2izYE1XFr1ufoMe4eV2rYqnmFV9q2KA0NA98eqBEQNtAulQK'; 
 
 try {
     echo "Starting database bloat process...\n";
     
-    // Step 1: Clear existing data (optional, comment out if you want to keep existing data)
-    // clearAllData();
     
-    // Step 2: Create users
+    
+    
+    
     echo "Creating users...\n";
     $userIds = createUsers($password_hash);
     
-    // Step 3: Create gigs
+    
     echo "Creating gigs...\n";
     $gigIds = createGigs($userIds);
     
-    // Step 4: Create working_on assignments
+    
     echo "Creating working_on assignments...\n";
     createWorkingOn($gigIds, $userIds);
     
-    // Step 5: Create analytics activities
+    
     echo "Creating analytics activities...\n";
     createAnalyticsActivities($userIds, $gigIds);
     
-    // Step 6: Create gig views
+    
     echo "Creating gig views...\n";
     createGigViews($gigIds, $userIds);
     
-    // Step 7: Create user earnings
+    
     echo "Creating user earnings...\n";
     createUserEarnings($gigIds, $userIds);
     
-    // Step 8: Create ratings
+    
     echo "Creating ratings...\n";
     createRatings($userIds, $gigIds);
     
-    // Step 9: Create badges
+    
     echo "Creating badges...\n";
     createBadges($userIds);
     
-    // Step 10: Create messages
+    
     echo "Creating messages...\n";
     createMessages($userIds, $gigIds);
     
-    // Step 11: Create forum threads
+    
     echo "Creating forum threads...\n";
     $threadIds = createForumThreads($userIds);
     
-    // Step 12: Create forum replies
+    
     echo "Creating forum replies...\n";
     createForumReplies($threadIds, $userIds);
     
-    // Step 13: Create gig search index
+    
     echo "Creating gig search index...\n";
     createGigSearchIndex($gigIds);
     
-    // Step 14: Create transaction ledger entries
+    
     echo "Creating transaction ledger entries...\n";
     createTransactionLedger($userIds, $gigIds);
     
-    // Step 15: Create user points
+    
     echo "Creating user points...\n";
     createUserPoints($userIds);
     
-    // Step 16: Create points activities
+    
     echo "Creating points activities...\n";
     createPointsActivities($userIds, $gigIds);
     
-    // Step 17: Create transaction batches
+    
     echo "Creating transaction batches...\n";
     createTransactionBatches($userIds);
     
-    // Step 18: Create transaction disputes
+    
     echo "Creating transaction disputes...\n";
     createTransactionDisputes($userIds, $gigIds);
     
@@ -119,9 +119,9 @@ try {
     exit(1);
 }
 
-/**
- * Get credentials information
- */
+
+
+
 function getCredentialsInfo(): string
 {
     $info = <<<EOT
@@ -157,9 +157,9 @@ EOT;
     return $info;
 }
 
-/**
- * Clear all data from tables
- */
+
+
+
 function clearAllData(): void
 {
     $tables = [
@@ -193,17 +193,17 @@ function clearAllData(): void
     }
 }
 
-/**
- * Create dummy users
- * 
- * @return array Array of user IDs
- */
+
+
+
+
+
 function createUsers(string $password_hash): array
 {
     $conn = db();
     $userIds = [];
     
-    // Admin user
+    
     $bracu_id = '20101000';
     $email = '20101000@g.bracu.ac.bd';
     $conn->prepare('
@@ -214,7 +214,7 @@ function createUsers(string $password_hash): array
     ]);
     $userIds[] = $bracu_id;
     
-    // Freelancer users (50 users)
+    
     for ($i = 1; $i <= 50; $i++) {
         $bracu_id = sprintf('2010100%d', $i);
         $email = sprintf('2010100%d@g.bracu.ac.bd', $i);
@@ -230,11 +230,11 @@ function createUsers(string $password_hash): array
             ]);
             $userIds[] = $bracu_id;
         } catch (Exception $e) {
-            // Ignore duplicate errors
+            
         }
     }
     
-    // Client users (50 users)
+    
     for ($i = 51; $i <= 100; $i++) {
         $bracu_id = sprintf('2010100%d', $i);
         $email = sprintf('2010100%d@g.bracu.ac.bd', $i);
@@ -250,11 +250,11 @@ function createUsers(string $password_hash): array
             ]);
             $userIds[] = $bracu_id;
         } catch (Exception $e) {
-            // Ignore duplicate errors
+            
         }
     }
     
-    // Mixed role users (50 users)
+    
     for ($i = 101; $i <= 150; $i++) {
         $bracu_id = sprintf('2010100%d', $i);
         $email = sprintf('2010100%d@g.bracu.ac.bd', $i);
@@ -270,7 +270,7 @@ function createUsers(string $password_hash): array
             ]);
             $userIds[] = $bracu_id;
         } catch (Exception $e) {
-            // Ignore duplicate errors
+            
         }
     }
     
@@ -278,12 +278,12 @@ function createUsers(string $password_hash): array
     return $userIds;
 }
 
-/**
- * Create dummy gigs
- * 
- * @param array $userIds
- * @return array Array of gig IDs
- */
+
+
+
+
+
+
 function createGigs(array $userIds): array
 {
     $conn = db();
@@ -310,12 +310,12 @@ function createGigs(array $userIds): array
         'Graphic design for print',
     ];
     
-    // Create 300 gigs
+    
     for ($i = 0; $i < 300; $i++) {
         $creator_bracu_id = $userIds[rand(0, count($userIds) - 1)];
         $category = $categories[rand(0, count($categories) - 1)];
         $status = $statuses[rand(0, count($statuses) - 1)];
-        $credit_amount = rand(50, 5000) / 2; // 25 to 2500
+        $credit_amount = rand(50, 5000) / 2; 
         $description = $gig_descriptions[rand(0, count($gig_descriptions) - 1)] . " #" . ($i + 1);
         $deadline = date('Y-m-d', strtotime('+' . rand(7, 90) . ' days'));
         
@@ -327,7 +327,7 @@ function createGigs(array $userIds): array
             $stmt->execute([$creator_bracu_id, $credit_amount, $description, $category, $deadline, $status]);
             $gigIds[] = $conn->lastInsertId();
         } catch (Exception $e) {
-            // Ignore errors
+            
         }
     }
     
@@ -335,29 +335,29 @@ function createGigs(array $userIds): array
     return $gigIds;
 }
 
-/**
- * Create working_on assignments
- * 
- * @param array $gigIds
- * @param array $userIds
- */
+
+
+
+
+
+
 function createWorkingOn(array $gigIds, array $userIds): void
 {
     $conn = db();
     $count = 0;
     
-    // Assign freelancers to some gigs (about 30%)
+    
     $assignment_count = (int) (count($gigIds) * 0.3);
     
     for ($i = 0; $i < $assignment_count; $i++) {
         $gigIndex = rand(0, count($gigIds) - 1);
         $gig_id = $gigIds[$gigIndex];
         
-        // Get the gig to get credit amount
+        
         $gig = $conn->query("SELECT CREDIT_AMOUNT FROM `Gigs` WHERE GID = $gig_id")->fetch();
         if (!$gig) continue;
         
-        $freelancer_bracu_id = $userIds[rand(1, count($userIds) - 1)]; // Skip admin
+        $freelancer_bracu_id = $userIds[rand(1, count($userIds) - 1)]; 
         $credit = $gig['CREDIT_AMOUNT'];
         $done_at = (rand(0, 1) ? date('Y-m-d H:i:s', strtotime('-' . rand(1, 30) . ' days')) : null);
         $payment_released = ($done_at ? rand(0, 1) : 0);
@@ -369,19 +369,19 @@ function createWorkingOn(array $gigIds, array $userIds): void
             ')->execute([$freelancer_bracu_id, $gig_id, $credit, $done_at, $payment_released]);
             $count++;
         } catch (Exception $e) {
-            // Ignore duplicate errors
+            
         }
     }
     
     echo "  Created $count working_on assignments\n";
 }
 
-/**
- * Create analytics activities
- * 
- * @param array $userIds
- * @param array $gigIds
- */
+
+
+
+
+
+
 function createAnalyticsActivities(array $userIds, array $gigIds): void
 {
     $conn = db();
@@ -390,7 +390,7 @@ function createAnalyticsActivities(array $userIds, array $gigIds): void
     $activity_types = ['login', 'gig_view', 'gig_create', 'gig_apply', 'profile_view', 'message_send'];
     $ip_addresses = ['192.168.1.1', '192.168.1.2', '10.0.0.1', '172.16.0.1', '127.0.0.1'];
     
-    // Create 1000 activity records
+    
     for ($i = 0; $i < 1000; $i++) {
         $user_bracu_id = $userIds[rand(0, count($userIds) - 1)];
         $activity_type = $activity_types[rand(0, count($activity_types) - 1)];
@@ -414,19 +414,19 @@ function createAnalyticsActivities(array $userIds, array $gigIds): void
             ]);
             $count++;
         } catch (Exception $e) {
-            // Ignore errors
+            
         }
     }
     
     echo "  Created $count analytics activities\n";
 }
 
-/**
- * Create gig views
- * 
- * @param array $gigIds
- * @param array $userIds
- */
+
+
+
+
+
+
 function createGigViews(array $gigIds, array $userIds): void
 {
     $conn = db();
@@ -434,7 +434,7 @@ function createGigViews(array $gigIds, array $userIds): void
     
     $ip_addresses = ['192.168.1.1', '192.168.1.2', '10.0.0.1', '172.16.0.1', '127.0.0.1'];
     
-    // Create 2000 gig views
+    
     for ($i = 0; $i < 2000; $i++) {
         $gig_id = $gigIds[rand(0, count($gigIds) - 1)];
         $user_bracu_id = (rand(0, 1) ? $userIds[rand(0, count($userIds) - 1)] : null);
@@ -448,19 +448,19 @@ function createGigViews(array $gigIds, array $userIds): void
             ')->execute([$gig_id, $user_bracu_id, $ip_address, $viewed_at]);
             $count++;
         } catch (Exception $e) {
-            // Ignore errors
+            
         }
     }
     
     echo "  Created $count gig views\n";
 }
 
-/**
- * Create user earnings
- * 
- * @param array $gigIds
- * @param array $userIds
- */
+
+
+
+
+
+
 function createUserEarnings(array $gigIds, array $userIds): void
 {
     $conn = db();
@@ -468,14 +468,14 @@ function createUserEarnings(array $gigIds, array $userIds): void
     
     $statuses = ['pending', 'released', 'refunded'];
     
-    // Create earnings for about 30% of gigs
+    
     $earnings_count = (int) (count($gigIds) * 0.3);
     
     for ($i = 0; $i < $earnings_count; $i++) {
         $gig_index = rand(0, count($gigIds) - 1);
         $gig_id = $gigIds[$gig_index];
         
-        // Get gig credit amount
+        
         $gig = $conn->query("SELECT CREDIT_AMOUNT FROM `Gigs` WHERE GID = $gig_id")->fetch();
         if (!$gig) continue;
         
@@ -492,19 +492,19 @@ function createUserEarnings(array $gigIds, array $userIds): void
             ')->execute([$freelancer_bracu_id, $gig_id, $amount, $status, $earned_at, $released_at]);
             $count++;
         } catch (Exception $e) {
-            // Ignore errors
+            
         }
     }
     
     echo "  Created $count user earnings\n";
 }
 
-/**
- * Create ratings
- * 
- * @param array $userIds
- * @param array $gigIds
- */
+
+
+
+
+
+
 function createRatings(array $userIds, array $gigIds): void
 {
     $conn = db();
@@ -523,12 +523,12 @@ function createRatings(array $userIds, array $gigIds): void
         'Great experience overall.',
     ];
     
-    // Create 300 ratings
+    
     for ($i = 0; $i < 300; $i++) {
         $rater_bracu_id = $userIds[rand(0, count($userIds) - 1)];
         $ratee_bracu_id = $userIds[rand(0, count($userIds) - 1)];
         
-        // Skip if rater and ratee are the same
+        
         if ($rater_bracu_id === $ratee_bracu_id) continue;
         
         $gig_id = (rand(0, 1) ? $gigIds[rand(0, count($gigIds) - 1)] : null);
@@ -552,18 +552,18 @@ function createRatings(array $userIds, array $gigIds): void
             ]);
             $count++;
         } catch (Exception $e) {
-            // Ignore duplicate errors
+            
         }
     }
     
     echo "  Created $count ratings\n";
 }
 
-/**
- * Create badges
- * 
- * @param array $userIds
- */
+
+
+
+
+
 function createBadges(array $userIds): void
 {
     $conn = db();
@@ -585,7 +585,7 @@ function createBadges(array $userIds): void
         'new_member' => 'Recently joined the platform'
     ];
     
-    // Assign badges to users
+    
     foreach ($userIds as $user_bracu_id) {
         $num_badges = rand(1, 3);
         $selected_badges = array_rand($badge_types, min($num_badges, count($badge_types)));
@@ -611,7 +611,7 @@ function createBadges(array $userIds): void
                 ]);
                 $count++;
             } catch (Exception $e) {
-                // Ignore duplicate errors
+                
             }
         }
     }
@@ -619,12 +619,12 @@ function createBadges(array $userIds): void
     echo "  Created $count badges\n";
 }
 
-/**
- * Create messages
- * 
- * @param array $userIds
- * @param array $gigIds
- */
+
+
+
+
+
+
 function createMessages(array $userIds, array $gigIds): void
 {
     $conn = db();
@@ -643,12 +643,12 @@ function createMessages(array $userIds, array $gigIds): void
         'Please provide an update on progress.',
     ];
     
-    // Create 500 messages
+    
     for ($i = 0; $i < 500; $i++) {
         $sender_bracu_id = $userIds[rand(0, count($userIds) - 1)];
         $recipient_bracu_id = $userIds[rand(0, count($userIds) - 1)];
         
-        // Skip if sender and recipient are the same
+        
         if ($sender_bracu_id === $recipient_bracu_id) continue;
         
         $gig_id = (rand(0, 1) ? $gigIds[rand(0, count($gigIds) - 1)] : null);
@@ -672,19 +672,19 @@ function createMessages(array $userIds, array $gigIds): void
             ]);
             $count++;
         } catch (Exception $e) {
-            // Ignore errors
+            
         }
     }
     
     echo "  Created $count messages\n";
 }
 
-/**
- * Create forum threads
- * 
- * @param array $userIds
- * @return array Array of thread IDs
- */
+
+
+
+
+
+
 function createForumThreads(array $userIds): array
 {
     $conn = db();
@@ -709,7 +709,7 @@ function createForumThreads(array $userIds): array
         'Building client relationships',
     ];
     
-    // Create 100 forum threads
+    
     for ($i = 0; $i < 100; $i++) {
         $creator_bracu_id = $userIds[rand(0, count($userIds) - 1)];
         $title = $thread_titles[rand(0, count($thread_titles) - 1)] . ' #' . ($i + 1);
@@ -733,7 +733,7 @@ function createForumThreads(array $userIds): array
             ]);
             $threadIds[] = $conn->lastInsertId();
         } catch (Exception $e) {
-            // Ignore errors
+            
         }
     }
     
@@ -741,12 +741,12 @@ function createForumThreads(array $userIds): array
     return $threadIds;
 }
 
-/**
- * Create forum replies
- * 
- * @param array $threadIds
- * @param array $userIds
- */
+
+
+
+
+
+
 function createForumReplies(array $threadIds, array $userIds): void
 {
     $conn = db();
@@ -765,7 +765,7 @@ function createForumReplies(array $threadIds, array $userIds): void
         'Thanks for the detailed explanation.',
     ];
     
-    // Create 500 forum replies
+    
     for ($i = 0; $i < 500; $i++) {
         $thread_id = $threadIds[rand(0, count($threadIds) - 1)];
         $author_bracu_id = $userIds[rand(0, count($userIds) - 1)];
@@ -784,18 +784,18 @@ function createForumReplies(array $threadIds, array $userIds): void
             ]);
             $count++;
         } catch (Exception $e) {
-            // Ignore errors
+            
         }
     }
     
     echo "  Created $count forum replies\n";
 }
 
-/**
- * Create gig search index
- * 
- * @param array $gigIds
- */
+
+
+
+
+
 function createGigSearchIndex(array $gigIds): void
 {
     $conn = db();
@@ -819,7 +819,7 @@ function createGigSearchIndex(array $gigIds): void
         'seo optimization ranking'
     ];
     
-    // Create search index for all gigs
+    
     foreach ($gigIds as $gig_id) {
         $keywords = $keywords_pool[rand(0, count($keywords_pool) - 1)];
         
@@ -830,25 +830,25 @@ function createGigSearchIndex(array $gigIds): void
             ')->execute([$gig_id, $keywords]);
             $count++;
         } catch (Exception $e) {
-            // Ignore duplicate errors
+            
         }
     }
     
     echo "  Created $count gig search index entries\n";
 }
 
-/**
- * Create transaction ledger entries
- * 
- * @param array $userIds
- * @param array $gigIds
- */
+
+
+
+
+
+
 function createTransactionLedger(array $userIds, array $gigIds): void
 {
     $conn = db();
     $count = 0;
     
-    // Check if table exists
+    
     try {
         $result = $conn->query("SHOW TABLES LIKE 'Transaction_Ledger'")->fetch();
         if (!$result) {
@@ -863,12 +863,12 @@ function createTransactionLedger(array $userIds, array $gigIds): void
     $transaction_types = ['gig_payment', 'points_redemption', 'refund', 'bonus', 'withdrawal'];
     $statuses = ['pending', 'completed', 'failed', 'reversed'];
     
-    // Create 400 transaction ledger entries
+    
     for ($i = 0; $i < 400; $i++) {
         $from_user = $userIds[rand(0, count($userIds) - 1)];
         $to_user = $userIds[rand(0, count($userIds) - 1)];
         
-        // Skip if same user
+        
         if ($from_user === $to_user) continue;
         
         $transaction_id = 'TXN' . time() . rand(1000, 9999);
@@ -898,24 +898,24 @@ function createTransactionLedger(array $userIds, array $gigIds): void
             ]);
             $count++;
         } catch (Exception $e) {
-            // Ignore errors
+            
         }
     }
     
     echo "  Created $count transaction ledger entries\n";
 }
 
-/**
- * Create user points
- * 
- * @param array $userIds
- */
+
+
+
+
+
 function createUserPoints(array $userIds): void
 {
     $conn = db();
     $count = 0;
     
-    // Check if table exists
+    
     try {
         $result = $conn->query("SHOW TABLES LIKE 'User_Points'")->fetch();
         if (!$result) {
@@ -929,7 +929,7 @@ function createUserPoints(array $userIds): void
     
     $tiers = ['bronze', 'silver', 'gold', 'platinum'];
     
-    // Create points for all users
+    
     foreach ($userIds as $user_bracu_id) {
         $total_points = rand(0, 5000);
         $available_points = rand(0, $total_points);
@@ -951,25 +951,25 @@ function createUserPoints(array $userIds): void
             ]);
             $count++;
         } catch (Exception $e) {
-            // Ignore duplicate errors
+            
         }
     }
     
     echo "  Created $count user points records\n";
 }
 
-/**
- * Create points activities
- * 
- * @param array $userIds
- * @param array $gigIds
- */
+
+
+
+
+
+
 function createPointsActivities(array $userIds, array $gigIds): void
 {
     $conn = db();
     $count = 0;
     
-    // Check if table exists
+    
     try {
         $result = $conn->query("SHOW TABLES LIKE 'Points_Activity'")->fetch();
         if (!$result) {
@@ -983,7 +983,7 @@ function createPointsActivities(array $userIds, array $gigIds): void
     
     $activity_types = ['earned', 'redeemed', 'bonus', 'expired'];
     
-    // Create 300 points activities
+    
     for ($i = 0; $i < 300; $i++) {
         $user_bracu_id = $userIds[rand(0, count($userIds) - 1)];
         $activity_type = $activity_types[rand(0, count($activity_types) - 1)];
@@ -1004,24 +1004,24 @@ function createPointsActivities(array $userIds, array $gigIds): void
             ]);
             $count++;
         } catch (Exception $e) {
-            // Ignore errors
+            
         }
     }
     
     echo "  Created $count points activities\n";
 }
 
-/**
- * Create transaction batches
- * 
- * @param array $userIds
- */
+
+
+
+
+
 function createTransactionBatches(array $userIds): void
 {
     $conn = db();
     $count = 0;
     
-    // Check if table exists
+    
     try {
         $result = $conn->query("SHOW TABLES LIKE 'Transaction_Batch'")->fetch();
         if (!$result) {
@@ -1036,7 +1036,7 @@ function createTransactionBatches(array $userIds): void
     $batch_types = ['daily_settlements', 'points_conversion', 'refund_batch', 'bonus_distribution'];
     $statuses = ['pending', 'processing', 'completed', 'failed'];
     
-    // Create 50 transaction batches
+    
     for ($i = 0; $i < 50; $i++) {
         $batch_id = 'BATCH' . time() . rand(1000, 9999);
         $batch_type = $batch_types[rand(0, count($batch_types) - 1)];
@@ -1045,7 +1045,7 @@ function createTransactionBatches(array $userIds): void
         $failed_transactions = $total_transactions - $successful_transactions;
         $total_amount = rand(1000, 50000) / 2;
         $status = $statuses[rand(0, count($statuses) - 1)];
-        $initiated_by = (rand(0, 1) ? $userIds[0] : null); // Admin mostly
+        $initiated_by = (rand(0, 1) ? $userIds[0] : null); 
         $created_at = date('Y-m-d H:i:s', strtotime('-' . rand(1, 90) . ' days'));
         $started_at = ($status !== 'pending' ? date('Y-m-d H:i:s', strtotime('-' . rand(1, 60) . ' days')) : null);
         $completed_at = ($status === 'completed' ? date('Y-m-d H:i:s', strtotime('-' . rand(0, 60) . ' days')) : null);
@@ -1069,25 +1069,25 @@ function createTransactionBatches(array $userIds): void
             ]);
             $count++;
         } catch (Exception $e) {
-            // Ignore errors
+            
         }
     }
     
     echo "  Created $count transaction batches\n";
 }
 
-/**
- * Create transaction disputes
- * 
- * @param array $userIds
- * @param array $gigIds
- */
+
+
+
+
+
+
 function createTransactionDisputes(array $userIds, array $gigIds): void
 {
     $conn = db();
     $count = 0;
     
-    // Check if tables exist
+    
     try {
         $result = $conn->query("SHOW TABLES LIKE 'Transaction_Disputes'")->fetch();
         if (!$result) {
@@ -1109,18 +1109,18 @@ function createTransactionDisputes(array $userIds, array $gigIds): void
     $statuses = ['open', 'under_review', 'resolved', 'closed'];
     $resolution_types = ['refund', 'partial_refund', 'accepted', 'rejected'];
     
-    // Get some transaction IDs
+    
     $transactions = $conn->query("SELECT transaction_id FROM `Transaction_Ledger` LIMIT 50")->fetchAll();
     
     if (!empty($transactions)) {
-        // Create disputes for some transactions
+        
         foreach ($transactions as $transaction) {
             $dispute_id = 'DISP' . time() . rand(1000, 9999);
             $transaction_id = $transaction['transaction_id'];
             $complainant_id = $userIds[rand(0, count($userIds) - 1)];
             $respondent_id = $userIds[rand(0, count($userIds) - 1)];
             
-            // Skip if same
+            
             if ($complainant_id === $respondent_id) continue;
             
             $gig_id = (rand(0, 1) ? $gigIds[rand(0, count($gigIds) - 1)] : null);
@@ -1129,7 +1129,7 @@ function createTransactionDisputes(array $userIds, array $gigIds): void
             $status = $statuses[rand(0, count($statuses) - 1)];
             $resolution_type = ($status !== 'open' ? $resolution_types[rand(0, count($resolution_types) - 1)] : null);
             $refund_amount = ($resolution_type && in_array($resolution_type, ['refund', 'partial_refund']) ? rand(50, 5000) / 2 : null);
-            $resolved_by = ($status === 'resolved' || $status === 'closed' ? $userIds[0] : null); // Admin
+            $resolved_by = ($status === 'resolved' || $status === 'closed' ? $userIds[0] : null); 
             $created_at = date('Y-m-d H:i:s', strtotime('-' . rand(1, 90) . ' days'));
             $resolved_at = ($status === 'resolved' || $status === 'closed' ? date('Y-m-d H:i:s', strtotime('-' . rand(0, 60) . ' days')) : null);
             
@@ -1154,7 +1154,7 @@ function createTransactionDisputes(array $userIds, array $gigIds): void
                 ]);
                 $count++;
             } catch (Exception $e) {
-                // Ignore errors
+                
             }
         }
     }

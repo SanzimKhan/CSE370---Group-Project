@@ -1,7 +1,7 @@
 <?php
-/**
- * Load sample/test data into the database
- */
+
+
+
 
 declare(strict_types=1);
 
@@ -16,7 +16,7 @@ try {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ]);
 
-    // Read sample data file
+    
     $sampleDataFile = __DIR__ . '/sample_data.sql';
     if (!file_exists($sampleDataFile)) {
         echo "❌ sample_data.sql not found\n";
@@ -25,7 +25,7 @@ try {
 
     $sqlContent = file_get_contents($sampleDataFile);
     
-    // Split by semicolon and filter
+    
     $statements = array_filter(
         array_map('trim', explode(';', $sqlContent)),
         fn($stmt) => !empty($stmt) && !str_starts_with($stmt, '--')

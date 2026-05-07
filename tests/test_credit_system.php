@@ -1,15 +1,15 @@
 <?php
-/**
- * Credit Management System - Comprehensive Test Suite
- * 
- * Tests all credit functionality including:
- * - Credit balance operations
- * - Circulation through project payments and transfers
- * - Credit history tracking
- * - Credit bonuses
- * - Credit limits and restrictions
- * - Edge cases and error handling
- */
+
+
+
+
+
+
+
+
+
+
+
 
 declare(strict_types=1);
 
@@ -43,7 +43,7 @@ class CreditTestSuite {
             return (string) $created['BRACU_ID'];
         }
 
-        // Fallback to a random valid ID when the preferred one is taken by a deleted email conflict.
+        
         for ($i = 0; $i < 20; $i++) {
             $id = (string) mt_rand(20000000, 20999999);
             $email = $emailPrefix . '+' . $id . '@example.com';
@@ -56,47 +56,47 @@ class CreditTestSuite {
         throw new Exception('Failed to create test user for credit tests.');
     }
 
-    /**
-     * Run all tests
-     */
+    
+
+
     public function runAllTests(): void {
         echo "\n";
         echo "════════════════════════════════════════════════════════════\n";
         echo "    CREDIT MANAGEMENT SYSTEM - TEST SUITE\n";
         echo "════════════════════════════════════════════════════════════\n\n";
 
-        // Basic tests
+        
         $this->testGetCreditBalance();
         $this->testAddCredits();
         $this->testDeductCredits();
         $this->testInsufficientCredits();
         
-        // Credit history
+        
         $this->testCreditHistoryTracking();
         $this->testCreditSummary();
         
-        // Credit bonuses
+        
         $this->testGrantBonus();
         $this->testGetAvailableBonuses();
         
-        // Credit limits
+        
         $this->testCreditLimitCheck();
         $this->testDailySpendingLimit();
         
-        // Edge cases
+        
         $this->testNegativeAmounts();
         $this->testMaximumAmounts();
         $this->testConcurrentTransactions();
         $this->testTransferCredits();
         $this->testFormattingAndValidation();
 
-        // Print summary
+        
         $this->printSummary();
     }
 
-    // ================================================================
-    // BASIC CREDIT OPERATIONS TESTS
-    // ================================================================
+    
+    
+    
 
     private function testGetCreditBalance(): void {
         echo "TEST 1: Get Credit Balance\n";
@@ -133,7 +133,7 @@ class CreditTestSuite {
     private function testDeductCredits(): void {
         echo "TEST 3: Deduct Credits\n";
         try {
-            // First add some credits
+            
             add_credits($this->testUser, 1000, 'topup', 'TEST-002');
             $balanceBefore = get_user_credit_balance($this->testUser);
             
@@ -168,9 +168,9 @@ class CreditTestSuite {
         }
     }
 
-    // ================================================================
-    // CREDIT HISTORY TESTS
-    // ================================================================
+    
+    
+    
 
     private function testCreditHistoryTracking(): void {
         echo "TEST 5: Credit History Tracking\n";
@@ -178,7 +178,7 @@ class CreditTestSuite {
             $history = get_credit_history($this->testUser, 10);
             $this->assert(is_array($history), "Should return array of history");
             
-            // Add a transaction
+            
             add_credits($this->testUser, 250, 'bonus', 'TEST-H1', null, 'History test');
             $newHistory = get_credit_history($this->testUser, 10);
 
@@ -227,9 +227,9 @@ class CreditTestSuite {
         }
     }
 
-    // ================================================================
-    // CREDIT BONUS TESTS
-    // ================================================================
+    
+    
+    
 
     private function testGrantBonus(): void {
         echo "TEST 7: Grant Bonus Credits\n";
@@ -267,9 +267,9 @@ class CreditTestSuite {
         }
     }
 
-    // ================================================================
-    // CREDIT LIMIT TESTS
-    // ================================================================
+    
+    
+    
 
     private function testCreditLimitCheck(): void {
         echo "TEST 9: Credit Limit Check\n";
@@ -308,9 +308,9 @@ class CreditTestSuite {
         }
     }
 
-    // ================================================================
-    // EDGE CASE TESTS
-    // ================================================================
+    
+    
+    
 
     private function testNegativeAmounts(): void {
         echo "TEST 11: Negative Amount Rejection\n";
@@ -349,7 +349,7 @@ class CreditTestSuite {
         try {
             $initialBalance = get_user_credit_balance($this->testUser);
             
-            // Simulate concurrent debits
+            
             $result1 = deduct_credits($this->testUser, 100, 'debit', 'TEST-C1');
             $result2 = deduct_credits($this->testUser, 100, 'debit', 'TEST-C2');
             
@@ -372,7 +372,7 @@ class CreditTestSuite {
     private function testTransferCredits(): void {
         echo "TEST 14: Transfer Credits Between Users\n";
         try {
-            // Add credits to test user first
+            
             add_credits($this->testUser, 1000, 'bonus');
             $sender_before = get_user_credit_balance($this->testUser);
             $receiver_before = get_user_credit_balance($this->testUser2);
@@ -402,7 +402,7 @@ class CreditTestSuite {
     private function testFormattingAndValidation(): void {
         echo "TEST 15: Formatting and Validation\n";
         try {
-            // Test credit amount validation
+            
             $valid1 = validate_credit_amount(100);
             $this->assert($valid1['valid'], "100 should be valid");
             
@@ -415,7 +415,7 @@ class CreditTestSuite {
             $valid4 = validate_credit_amount(2000000);
             $this->assert(!$valid4['valid'], "2000000 should be invalid");
             
-            // Test formatting
+            
             $formatted = format_credits(1500.50);
             $this->assert(str_contains($formatted, '৳'), "Should use Taka symbol");
             
@@ -429,9 +429,9 @@ class CreditTestSuite {
         }
     }
 
-    // ================================================================
-    // HELPER METHODS
-    // ================================================================
+    
+    
+    
 
     private function assert(bool $condition, string $message): void {
         if (!$condition) {
@@ -471,7 +471,7 @@ class CreditTestSuite {
     }
 }
 
-// Run tests
+
 if (php_sapi_name() === 'cli') {
     $suite = new CreditTestSuite();
     $suite->runAllTests();

@@ -44,7 +44,7 @@ if (is_post_request()) {
 
             set_active_user_mode($accountMode);
             
-            // Track login activity
+            
             require_once __DIR__ . '/includes/analytics.php';
             $analytics = new Analytics(db());
             $analytics->logActivity($user['BRACU_ID'], 'login', null, null, ['mode' => $accountMode]);
