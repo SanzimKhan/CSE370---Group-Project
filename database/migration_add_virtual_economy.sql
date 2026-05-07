@@ -1,9 +1,7 @@
--- Virtual Economy & Transaction Processing System
--- Adds support for rewards/points system, transaction ledger, batch processing, and dispute handling
+
 
 USE bracu_freelance_marketplace;
 
--- Table for tracking all financial transactions (audit trail)
 CREATE TABLE IF NOT EXISTS `Transaction_Ledger` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     transaction_id VARCHAR(50) NOT NULL UNIQUE,
@@ -40,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `Transaction_Ledger` (
     INDEX idx_batch_id (batch_id)
 );
 
--- Table for user rewards/points system
+
 CREATE TABLE IF NOT EXISTS `User_Points` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     BRACU_ID VARCHAR(20) NOT NULL UNIQUE,
@@ -61,7 +59,6 @@ CREATE TABLE IF NOT EXISTS `User_Points` (
     INDEX idx_points_tier (points_tier)
 );
 
--- Table for tracking point activities
 CREATE TABLE IF NOT EXISTS `Points_Activity` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     BRACU_ID VARCHAR(20) NOT NULL,
@@ -83,7 +80,6 @@ CREATE TABLE IF NOT EXISTS `Points_Activity` (
     INDEX idx_created_at (created_at)
 );
 
--- Table for batch transaction processing
 CREATE TABLE IF NOT EXISTS `Transaction_Batch` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     batch_id VARCHAR(50) NOT NULL UNIQUE,
@@ -106,8 +102,6 @@ CREATE TABLE IF NOT EXISTS `Transaction_Batch` (
     INDEX idx_status (status),
     INDEX idx_created_at (created_at)
 );
-
--- Table for transaction disputes and refund requests
 CREATE TABLE IF NOT EXISTS `Transaction_Disputes` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     dispute_id VARCHAR(50) NOT NULL UNIQUE,
@@ -152,7 +146,6 @@ CREATE TABLE IF NOT EXISTS `Transaction_Disputes` (
     INDEX idx_dispute_reason (dispute_reason)
 );
 
--- Table for reward redemption history
 CREATE TABLE IF NOT EXISTS `Redemption_History` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     redemption_id VARCHAR(50) NOT NULL UNIQUE,
@@ -173,12 +166,10 @@ CREATE TABLE IF NOT EXISTS `Redemption_History` (
     INDEX idx_created_at (created_at)
 );
 
--- Initialize points for all existing users
 INSERT INTO User_Points (BRACU_ID, total_points, available_points, points_tier)
 SELECT BRACU_ID, 0, 0, 'bronze' FROM User
 WHERE BRACU_ID NOT IN (SELECT BRACU_ID FROM User_Points);
 
--- Add indexes for performance optimization
 CREATE INDEX idx_ledger_from_to ON Transaction_Ledger (from_user, to_user);
 CREATE INDEX idx_ledger_gig_status ON Transaction_Ledger (gig_id, status);
 CREATE INDEX idx_points_tier_date ON User_Points (points_tier, updated_at);

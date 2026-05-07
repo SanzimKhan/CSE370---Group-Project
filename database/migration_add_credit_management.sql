@@ -1,11 +1,7 @@
--- Credit Management System Migration
--- Adds credit top-up, payment tracking, and credit history
+
 
 USE bracu_freelance_marketplace;
 
--- ============================================================================
--- Credit_Topup: Tracks all credit top-up transactions
--- ============================================================================
 CREATE TABLE IF NOT EXISTS `Credit_Topup` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     topup_id VARCHAR(50) NOT NULL UNIQUE,
@@ -33,10 +29,6 @@ CREATE TABLE IF NOT EXISTS `Credit_Topup` (
     INDEX idx_topup_reference (transaction_reference)
 );
 
--- ============================================================================
--- Credit_History: Audit trail for all credit movements
--- ============================================================================
-CREATE TABLE IF NOT EXISTS `Credit_History` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     history_id VARCHAR(50) NOT NULL UNIQUE,
     BRACU_ID VARCHAR(20) NOT NULL,
@@ -68,9 +60,6 @@ CREATE TABLE IF NOT EXISTS `Credit_History` (
     INDEX idx_history_gig (gig_id)
 );
 
--- ============================================================================
--- Credit_Bonus: Track bonus credits and promotional offers
--- ============================================================================
 CREATE TABLE IF NOT EXISTS `Credit_Bonus` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     bonus_id VARCHAR(50) NOT NULL UNIQUE,
@@ -105,9 +94,6 @@ CREATE TABLE IF NOT EXISTS `Credit_Bonus` (
     INDEX idx_bonus_redeemed (is_redeemed)
 );
 
--- ============================================================================
--- Credit_Limit: Track credit spending limits and restrictions
--- ============================================================================
 CREATE TABLE IF NOT EXISTS `Credit_Limit` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     BRACU_ID VARCHAR(20) NOT NULL UNIQUE,
@@ -126,23 +112,17 @@ CREATE TABLE IF NOT EXISTS `Credit_Limit` (
         ON DELETE CASCADE
 );
 
--- ============================================================================
--- Indexes for performance optimization
--- ============================================================================
+
 CREATE INDEX idx_credit_topup_completed ON `Credit_Topup` (payment_status, completed_at);
 CREATE INDEX idx_credit_history_balance ON `Credit_History` (BRACU_ID, created_at, transaction_type);
 CREATE INDEX idx_credit_bonus_valid ON `Credit_Bonus` (BRACU_ID, is_redeemed, expiry_date);
 
--- ============================================================================
--- Initialize credit limits for existing users
--- ============================================================================
+
 INSERT INTO `Credit_Limit` (BRACU_ID, daily_limit, monthly_limit)
 SELECT BRACU_ID, 100000.00, 500000.00 FROM `User`
 WHERE BRACU_ID NOT IN (SELECT BRACU_ID FROM `Credit_Limit`);
 
--- ============================================================================
--- Give signup bonus to existing users (100 credits)
--- ============================================================================
+
 INSERT INTO `Credit_Bonus` (bonus_id, BRACU_ID, bonus_amount, bonus_type, reason, granted_by)
 SELECT 
     CONCAT('BONUS-SIGNUP-', BRACU_ID, '-', UNIX_TIMESTAMP()),
@@ -154,11 +134,3 @@ SELECT
 FROM `User`
 WHERE BRACU_ID NOT IN (SELECT BRACU_ID FROM `Credit_Bonus` WHERE bonus_type = 'signup');
 
--- ============================================================================
--- Verification
--- ============================================================================
--- Run these queries to verify:
--- SELECT COUNT(*) FROM `Credit_Topup`;
--- SELECT COUNT(*) FROM `Credit_History`;
--- SELECT COUNT(*) FROM `Credit_Bonus`;
--- SELECT COUNT(*) FROM `Credit_Limit`;
