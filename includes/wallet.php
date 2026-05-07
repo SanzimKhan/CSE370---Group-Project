@@ -199,3 +199,59 @@ function mark_gig_done_and_release_payment(int $gigId, string $clientId): array
         return ['ok' => false, 'message' => 'Payment transfer failed. Please try again.'];
     }
 }
+
+function delete_gig(int $gigId, string $clientId): array
+{
+    $pdo = db();
+
+    try {
+        $pdo->beginTransaction();
+
+        // Fetch gig with lock
+        $gigStatement = $pdo->prepare('SELECT * FROM `Gigs` WHERE GID = :gid FOR UPDATE');
+        $gigStatement->execute(['gid' => $gigId]);
+        $gig = $gigStatement->fetch();
+
+        if (!$gig) {
+            $pdo->rollBack();
+            return ['ok' => false, 'message' => 'Gig not found.'];
+        }
+
+        if ($gig['BRACU_ID'] !== $clientId) {
+            $pdo->rollBack();
+            return ['ok' => false, 'message' => 'Unauthorized: You can only delete your own gigs.'];
+        }
+
+        if ($gig['STATUS'] !== 'listed') {
+            $pdo->rollBack();
+            return ['ok' => false, 'message' => 'Only listed gigs can be deleted. Cannot delete pending or completed gigs.'];
+        }
+
+        // Check if anyone has accepted this gig
+        $checkAcceptedStatement = $pdo->prepare('SELECT COUNT(*) as count FROM `Working_on` WHERE GID = :gid');
+        $checkAcceptedStatement->execute(['gid' => $gigId]);
+        $accepted = $checkAcceptedStatement->fetch();
+
+        if ($accepted && (int)$accepted['count'] > 0) {
+            $pdo->rollBack();
+            return ['ok' => false, 'message' => 'Cannot delete: A freelancer has already accepted this gig.'];
+        }
+
+        // Delete the gig
+        $deleteStatement = $pdo->prepare('DELETE FROM `Gigs` WHERE GID = :gid');
+        $deleteStatement->execute(['gid' => $gigId]);
+
+        $pdo->commit();
+
+        return [
+            'ok' => true,
+            'message' => 'Gig deleted successfully.',
+        ];
+    } catch (Throwable $exception) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        return ['ok' => false, 'message' => 'Could not delete gig. Please try again.'];
+    }
+}

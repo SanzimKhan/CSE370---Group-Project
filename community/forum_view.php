@@ -7,7 +7,8 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/community.php';
 
 // Check authentication
-require_login();
+$currentUser = require_login();
+$creatorId = (string) ($currentUser['BRACU_ID'] ?? '');
 
 $pdo = db();
 $community = new Community($pdo);
@@ -23,8 +24,8 @@ if (!$thread_id) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_reply'])) {
     $reply_text = trim($_POST['reply_text'] ?? '');
     
-    if ($reply_text) {
-        $community->addForumReply($thread_id, $_SESSION['user_id'], $reply_text);
+    if ($reply_text && $creatorId !== '') {
+        $community->addForumReply($thread_id, $creatorId, $reply_text);
         header('Location: forum_view.php?id=' . $thread_id);
         exit;
     }

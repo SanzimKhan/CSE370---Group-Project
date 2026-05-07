@@ -7,7 +7,8 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/community.php';
 
 // Check authentication
-require_login();
+$currentUser = require_login();
+$creatorId = (string) ($currentUser['BRACU_ID'] ?? '');
 
 $pdo = db();
 $community = new Community($pdo);
@@ -18,8 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_thread'])) {
     $description = trim($_POST['description'] ?? '');
     $category = $_POST['category'] ?? 'General';
 
-    if ($title && $description) {
-        $community->createForumThread($_SESSION['user_id'], $title, $description, $category);
+    if ($title && $description && $creatorId !== '') {
+        $community->createForumThread($creatorId, $title, $description, $category);
         header('Location: forum.php');
         exit;
     }
@@ -37,7 +38,7 @@ $threads = $community->getForumThreads($category, $limit, $offset);
 // Get user info for display
 $query = "SELECT full_name, avatar_path FROM User WHERE BRACU_ID = ?";
 $stmt = $pdo->prepare($query);
-$stmt->execute([$_SESSION['user_id']]);
+$stmt->execute([$creatorId]);
 $user_info = $stmt->fetch(PDO::FETCH_ASSOC);
 ?>
 

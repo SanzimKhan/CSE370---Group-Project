@@ -32,6 +32,14 @@ if (is_post_request()) {
         } else {
             set_flash('error', $result['message']);
         }
+    } elseif ($action === 'delete' && $gigId > 0) {
+        $result = delete_gig($gigId, $user['BRACU_ID']);
+
+        if ($result['ok']) {
+            set_flash('success', $result['message']);
+        } else {
+            set_flash('error', $result['message']);
+        }
     }
 
     redirect('client/my_gigs.php');
@@ -106,6 +114,15 @@ require_once dirname(__DIR__) . '/includes/header.php';
                                     <?php if ($gig['freelancer_id']): ?>
                                         <a href="<?= BASE_URL ?>community/messages.php?user=<?= urlencode($gig['freelancer_id']) ?>&gig=<?= (int) $gig['GID'] ?>" class="btn btn-primary">💬 Message</a>
                                     <?php endif; ?>
+                                </div>
+                            <?php elseif ($gig['STATUS'] === 'listed'): ?>
+                                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                    <form class="inline-form" method="post" action="my_gigs.php" onsubmit="return confirm('Are you sure you want to delete this gig? This cannot be undone.');">
+                                        <?= csrf_field() ?>
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="gid" value="<?= (int) $gig['GID'] ?>">
+                                        <button class="btn-danger" type="submit" style="background-color: #dc3545; color: white; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer;">Delete</button>
+                                    </form>
                                 </div>
                             <?php else: ?>
                                 <span class="muted">-</span>
