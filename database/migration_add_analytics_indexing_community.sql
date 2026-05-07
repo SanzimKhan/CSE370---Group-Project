@@ -1,8 +1,4 @@
--- Analytics, Indexing, and Community Features Migration
 
--- ===== ANALYTICS TABLES =====
-
--- Track user activities for analytics
 CREATE TABLE IF NOT EXISTS `Analytics_Activity` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     BRACU_ID VARCHAR(20) NOT NULL,
@@ -23,7 +19,7 @@ CREATE TABLE IF NOT EXISTS `Analytics_Activity` (
         ON DELETE CASCADE
 );
 
--- Track gig views
+
 CREATE TABLE IF NOT EXISTS `Gig_Views` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     GID INT NOT NULL,
@@ -40,7 +36,6 @@ CREATE TABLE IF NOT EXISTS `Gig_Views` (
         ON DELETE SET NULL
 );
 
--- Track user earnings
 CREATE TABLE IF NOT EXISTS `User_Earnings` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     BRACU_ID VARCHAR(20) NOT NULL,
@@ -59,9 +54,8 @@ CREATE TABLE IF NOT EXISTS `User_Earnings` (
         ON DELETE CASCADE
 );
 
--- ===== COMMUNITY TABLES =====
 
--- Ratings and Reviews
+
 CREATE TABLE IF NOT EXISTS `Ratings` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     rater_id VARCHAR(20) NOT NULL,
@@ -87,7 +81,6 @@ CREATE TABLE IF NOT EXISTS `Ratings` (
     UNIQUE KEY unique_gig_rating (rater_id, ratee_id, gig_id)
 );
 
--- User Reputation/Badges
 CREATE TABLE IF NOT EXISTS `User_Badges` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     BRACU_ID VARCHAR(20) NOT NULL,
@@ -126,7 +119,6 @@ CREATE TABLE IF NOT EXISTS `Messages` (
         ON DELETE SET NULL
 );
 
--- Community Forums/Discussions
 CREATE TABLE IF NOT EXISTS `Forum_Threads` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     creator_id VARCHAR(20) NOT NULL,
@@ -163,9 +155,6 @@ CREATE TABLE IF NOT EXISTS `Forum_Replies` (
         ON DELETE CASCADE
 );
 
--- ===== INDEXING TABLES =====
-
--- Full-text search index for gigs
 CREATE TABLE IF NOT EXISTS `Gig_Search_Index` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     GID INT NOT NULL UNIQUE,
@@ -179,9 +168,6 @@ CREATE TABLE IF NOT EXISTS `Gig_Search_Index` (
         ON DELETE CASCADE
 );
 
--- ===== INDEXES FOR PERFORMANCE =====
-
--- Analytics indexes
 CREATE INDEX idx_analytics_user ON `Analytics_Activity` (BRACU_ID);
 CREATE INDEX idx_analytics_type ON `Analytics_Activity` (activity_type);
 CREATE INDEX idx_analytics_created ON `Analytics_Activity` (created_at);
@@ -190,7 +176,6 @@ CREATE INDEX idx_gig_views_user ON `Gig_Views` (BRACU_ID);
 CREATE INDEX idx_earnings_user ON `User_Earnings` (BRACU_ID);
 CREATE INDEX idx_earnings_status ON `User_Earnings` (status);
 
--- Community indexes
 CREATE INDEX idx_ratings_rater ON `Ratings` (rater_id);
 CREATE INDEX idx_ratings_ratee ON `Ratings` (ratee_id);
 CREATE INDEX idx_ratings_gig ON `Ratings` (gig_id);

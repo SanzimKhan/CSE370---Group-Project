@@ -7,7 +7,6 @@ ALTER TABLE `User`
     ADD COLUMN IF NOT EXISTS avatar_path VARCHAR(255) NULL AFTER bio,
     ADD COLUMN IF NOT EXISTS preferred_mode ENUM('hiring', 'working') NOT NULL DEFAULT 'hiring' AFTER freelancer;
 
--- Backfill reasonable defaults for existing records.
 UPDATE `User`
 SET full_name = COALESCE(NULLIF(full_name, ''), BRACU_ID),
     preferred_mode = CASE
