@@ -5,18 +5,6 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/helpers.php';
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 function get_user_credit_balance(string $bracu_id): float
 {
     $stmt = db()->prepare('SELECT credit_balance FROM `User` WHERE BRACU_ID = :id');
